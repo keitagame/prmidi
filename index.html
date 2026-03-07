@@ -1,0 +1,3100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    
+<meta charset="utf-8" />
+<title>みでぃ</title>
+<style>
+    @font-face {
+  font-family: "Renner";
+  src: url("./Renner.ttf") format("truetype");
+  font-display: swap;
+ 
+}
+  body {  font-family: "Renner", sans-serif; padding: 20px; background:black; color:white;}
+  .log { white-space: pre-wrap;  background: #111; color: #ddd; padding: 10px; border-radius: 6px; max-height: 200px; overflow-y: auto;display:none; }
+  button { margin-right: 8px; padding: 8px 16px; }
+  .file-input { margin: 10px 0; }
+  .status { color: #4a4; margin: 10px 0; }
+
+.keyboard {
+  position: relative;
+  height: 14px;
+  user-select: none;
+  background:#000;
+  border:1px solid #222;
+  overflow:hidden;
+}
+.bb{
+display:flex;
+margin-left:200px;
+}
+.bar {
+  
+  border: 1px solid #333;
+  box-sizing: border-box;
+}
+.bar.white {
+  width: 3px;
+  height: 4px;
+  background: #717171;
+  z-index: 1;
+}
+.bar.active.white {
+  background: rgb(255, 0, 0);
+}
+.key {
+  position: absolute;
+  bottom: 0;
+  border: 1px solid #333;
+  box-sizing: border-box;
+}
+
+.key.white {
+  width: 6px;
+  height: 16px;
+  background: #eee;
+  z-index: 1;
+}
+
+.key.black {
+ margin-top:0;
+margin-bottom:6px;
+  width: 5px;
+  height: 10px;
+  background: #111;
+  z-index: 2;
+  margin-left: 1px;
+}
+
+.key.active.white {
+  background: rgb(255, 0, 0);
+}
+
+.key.active.black {
+  background: rgb(255, 0, 0);
+}
+#keyboards{
+  display:flex;
+  flex-direction:column;
+  gap:0px;
+  margin-top:0px;
+}
+.keyboard{
+  position: relative;
+}
+.kbRow{
+  position: relative;
+  display:flex;
+  align-items:center;
+  gap:0px;
+}
+.kLabel{
+padding-left:200px;
+  width:50px;
+  font-size:5px;
+  color:#ffffff;
+}
+.kbLabel{
+  width:50px;
+  font-size:8px;
+  color:#ffffff;
+}
+.compatMenu{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:10px 0 12px 0;
+}
+
+.compatBtn{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border:1px solid #333;
+  background:#111;
+  color:#ddd;
+  border-radius:0px;
+  cursor:pointer;
+  font-family:"Renner", sans-serif;
+  font-size:12px;
+}
+
+.compatBtn .ico{ font-size:14px; }
+.compatBtn.active{
+  background:#222;
+  border-color:#666;
+  color:#fff;
+}
+
+.compatHint{
+  margin-left:10px;
+  font-size:12px;
+  color:#aaa;
+}
+.chInfo{
+  width:200px;
+  font-size:8px;
+  color:#fff;
+display:flex;
+}
+
+.instName{
+  white-space:nowrap;
+  overflow:hidden;
+}
+canvas{
+width:80px;
+height:20px;
+
+
+}
+#bigScopes{
+  margin-top:20px;
+  border-top:1px solid #333;
+  padding-top:10px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.bigScope{
+  width:100%;
+  height:120px;
+  background:#000;
+}
+
+</style>
+</head>
+<body>
+  <h1>MIDIweb</h1>
+  
+
+  <div class="file-input">
+  <label>MIDI Input: </label>
+  <select id="midiInputSelect" disabled>
+    <option value="">-- Select MIDI Input --</option>
+  </select>
+  <span id="midiInputStatus" class="status"></span>
+</div>
+
+<div class="file-input">
+  <label>Input Mode: </label>
+  <label style="margin-right:15px;">
+    <input type="radio" name="inputMode" value="file" checked />
+    MIDI File
+  </label>
+  <label>
+    <input type="radio" name="inputMode" value="realtime" />
+    Realtime MIDI
+  </label>
+</div>
+
+<label>
+  Melody CH :
+  <input
+    id="melodyChSlider"
+    type="range"
+    min="0"
+    max="15"
+    step="1"
+    value="1"
+  >
+  <span id="melodyChLabel">1</span>
+</label>
+  <!-- 既存のMIDI Fileの入力の下に追加 -->
+<div class="file-input">
+  <label>MIDI Output: </label>
+  <select id="midiOutputSelect" disabled>
+    <option value="">-- Select MIDI Device --</option>
+  </select>
+  <span id="midiOutputStatus" class="status"></span>
+</div>
+<div class="file-input">
+  <label>Output Mode: </label>
+  <label style="margin-right: 15px;">
+    <input type="radio" name="outputMode" value="soundfont" checked />
+    SoundFont
+  </label>
+  <label style="margin-right: 15px;">
+    <input type="radio" name="outputMode" value="midi" />
+    MIDI Device
+  </label>
+  <label>
+    <input type="radio" name="outputMode" value="both" />
+    Both
+  </label>
+</div>
+
+  <div class="file-input">
+    <label>SoundFont (.sf2): </label>
+    <input type="file" id="sf2File" accept=".sf2" />
+    <span id="sf2Status" class="status"></span>
+  </div>
+  
+  <div class="file-input">
+    <label>MIDI File (.mid): </label>
+    <input type="file" id="midiFile" accept=".mid,.midi" />
+  </div>
+  <!-- ▼ 互換モード切替メニュー -->
+<div id="compatMenu" class="compatMenu">
+  <button class="compatBtn active" data-mode="GM" title="General MIDI">
+    <span class="txt">GM</span>
+  </button>
+  <button class="compatBtn" data-mode="GS" title="Roland GS">
+    <span class="txt">GS</span>
+  </button>
+  <button class="compatBtn" data-mode="XG" title="Yamaha XG">
+   <span class="txt">XG</span>
+  </button>
+
+
+  <div class="compatHint" id="compatHint">Mode: GM</div>
+</div>
+<button id="recBtn">REC</button>
+<button id="recStopBtn" disabled>REC STOP</button>
+  <button id="playBtn">Play</button>
+ 
+  <button id="stopBtn">Stop</button>
+  
+  <div id="visualizer" style="display:grid; grid-template-columns:repeat(4,1fr); gap:0px; margin:20px 0;">
+  </div>
+  
+  <div class="log" id="log"></div>
+
+<div id="keyboards" style=""></div>
+
+<div id="bigScopes" style="display:none"></div>
+
+
+<script>
+  
+const bigScopes = [];
+let smoothBuf = new Float32Array(2048);
+const smoothBufs = Array.from({length:16}, () => new Float32Array(2048));
+
+function getSmoothWave(analyser, ch){
+
+  const buf = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(buf);
+
+  const smoothBuf = smoothBufs[ch];
+
+  for(let i=0;i<buf.length;i++){
+    smoothBuf[i] = smoothBuf[i] * 0.9 + (buf[i] / 255) * 0.1;
+  }
+
+  return smoothBuf;
+}
+
+
+function initBigScopes(){
+  const wrap = document.getElementById("bigScopes");
+  wrap.innerHTML = "";
+
+  for(let ch=0; ch<16; ch++){
+    const canvas = document.createElement("canvas");
+    canvas.className = "bigScope";
+    wrap.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+
+    bigScopes.push({canvas, ctx});
+  }
+
+  resizeBigScopes();
+}
+
+function resizeBigScopes(){
+  const dpr = window.devicePixelRatio || 0;
+
+  bigScopes.forEach(s=>{
+    const w = s.canvas.clientWidth;
+    const h = s.canvas.clientHeight;
+
+    s.canvas.width = w * dpr;
+    s.canvas.height = h * dpr;
+    
+    s.ctx.setTransform(dpr,0,0,dpr,0,0);
+  });
+}
+const lastTrigger = new Array(16).fill(0);
+
+window.addEventListener("resize", resizeBigScopes);
+function drawBigScopes(){
+
+  if(!synth) return;
+
+  for(let ch=0; ch<16; ch++){
+
+    const analyser = synth.channelAnalysers[ch];
+
+    const buf = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(buf);
+
+    // ⭐ 滑らか補間
+    const smoothBuf = smoothBufs[ch];
+
+    for(let i=0;i<buf.length;i++){
+      smoothBuf[i] = smoothBuf[i] * 0.9 + (buf[i] / 255) * 0.1;
+    }
+
+    // ⭐ 波形固定（トリガ）
+    let trigger = lastTrigger[ch];
+let found = false;
+    for(let i=1;i<smoothBuf.length;i++){
+      if(smoothBuf[i-1] < 0.9 && smoothBuf[i] >= 0.9){
+        trigger = i;
+found = true;
+        break;
+      }
+    }
+if(found){
+  if(Math.abs(trigger - lastTrigger[ch]) < 50){
+    lastTrigger[ch] = trigger;
+  }
+}else{
+  trigger = lastTrigger[ch];
+}
+    const {canvas, ctx} = bigScopes[ch];
+
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+
+    ctx.clearRect(0,0,w,h);
+    ctx.beginPath();
+const zoom = 8;
+    const step = (smoothBuf.length / w)/zoom;
+
+    for(let i=0;i<w;i++){
+      const index = Math.floor(i * step + trigger) % smoothBuf.length;
+      const v = smoothBuf[index];
+const gain = 2.0; // ← 波形の大きさ（1〜5くらい）
+
+const centered = (v - 0.5) * gain + 0.5;
+const y = (1 - centered) * h;
+
+      //const y = (1 - v) * h;
+
+      if(i===0) ctx.moveTo(i,y);
+      else ctx.lineTo(i,y);
+    }
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = `hsl(${ch*22},100%,60%)`;
+    ctx.stroke();
+  }
+}
+
+let chvelocity = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+const channelUI = new Array(16);
+function updateChannelInstrument(ch){
+  if(!channelUI[ch]) return;
+
+  const prog = synth.channelPrograms[ch];
+  const preset =
+    synth.sf.presets.find(p=>p.preset===prog && p.bank===0);
+
+  channelUI[ch].inst.textContent =
+    preset ? preset.name : `Prog ${prog}`;
+}
+
+  // ===== Melody Detection =====
+const melodyScore = new Array(16).fill(0);
+let lastMelodyCh = 0;
+let stableCount = 0;
+const noteStats = Array(16).fill().map(() => ({ count: 0, sumNote: 0, lastTime: 0, activeNoteCount: 0 }));
+const channelPoly = new Uint8Array(16);
+function onNoteOffForMelodyDetect(ch, note) {
+  const s = noteStats[ch];
+  if (s.activeNoteCount > 0) {
+    s.activeNoteCount--; // ここでアクティブなノートを減らす
+  }
+}
+function onNoteOnForMelodyDetect(ch, note, velocity) {
+  const s = noteStats[ch];
+  s.count++;
+  s.activeNoteCount++;
+  // 1. 高音域の重み付け (SC-88は高音をメロディと認識しやすい)
+  // ノート番号60(C4)以上を重視し、低音(ベース域)はスコアをほぼ加算しない
+  let pitchWeight = 0;
+  if (note >= 60) {
+    
+  pitchWeight = (note - 60) / 67 * 2.0; // 高いほど高得点
+  }else if(note >= 48){
+pitchWeight = (note - 60) / 67 * 1.0; // 高いほど高得点
+
+  } else if (note < 48) {
+    pitchWeight = -10.0; // 低すぎる音(ベース等)はマイナス評価
+  }
+
+  // 2. ベロシティによる重み付け
+  const velWeight = (velocity / 127) * 1.2;
+
+  melodyScore[ch] += (pitchWeight + velWeight);
+}
+function resetExternalSoundModule() {
+  if (!selectedMidiOutput) return;
+
+  let msg;
+
+  switch (compatMode) {
+    case "GS":
+      msg = [0xF0,0x41,0x10,0x42,0x12,0x40,0x00,0x7F,0x00,0x41,0xF7];
+      break;
+
+    case "XG":
+      msg = [0xF0,0x43,0x10,0x4C,0x00,0x00,0x7E,0x00,0xF7];
+      break;
+
+    case "GM":
+    default:
+      msg = [0xF0,0x7E,0x7F,0x09,0x01,0xF7];
+      break;
+  }
+
+  try {
+    selectedMidiOutput.send(msg);
+    log(`[MIDI] ${compatMode} Reset sent`);
+  } catch (e) {
+    console.warn("Reset failed:", e);
+  }
+}
+
+function updateMelodyScoreByVolume() {
+  for (let ch = 0; ch < 16; ch++) {
+    if (ch === 9) continue; 
+
+    // 3. RMS（音量）による評価
+    // 実際に鳴っている音量に即座に反応させる
+    const analyser = synth.channelAnalysers[ch];
+    const buf = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(buf);
+
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) {
+      const v = (buf[i] - 128) / 128;
+      sum += v * v;
+    }
+    const rms = Math.sqrt(sum / buf.length);
+
+    // 音量による加点はメロディ検出の決定打になることが多い
+    melodyScore[ch] += rms * 10.0; 
+  }
+}
+
+function detectMelodyChannel() {
+  let bestCh = melodyCh; // 急激なチャタリングを防ぐため現在のチャンネルを保持
+  let maxScore = -999;
+
+  for (let ch = 0; ch < 16; ch++) {
+    if (ch === 9) continue;
+const s = noteStats[ch];
+    if (s.count > 0) {
+      const avgNote = s.sumNote / s.count;
+      melodyScore[ch] += avgNote / 64;
+      
+      // 統計を少しずつ減衰させ、後半でも新しい音に反応しやすくする
+      s.count *= 0.9;
+      s.sumNote *= 0.9;
+    }
+    // --- ★ここから単音ポイントの付与★ ---
+    if (s.activeNoteCount == 1) {
+      // 現在単音で鳴っている場合に高いボーナス点を加算
+      melodyScore[ch] += 7.0; 
+    } else if (s.activeNoteCount > 1) {
+      // 複数の音が同時に鳴っている（和音・伴奏）場合はわずかに減点またはボーナスなし
+      // melodyScore[ch] -= 0.5; // 必要なら減点
+    }
+    // --- ★ここまで★ ---
+const idleTime = audioCtx.currentTime - s.lastTime;
+    if (idleTime > 0.5) { 
+      melodyScore[ch] *= 1; // 0.5秒鳴っていないチャンネルはスコア半減
+    }
+    // 4. チャネル固有の傾向（SC-88的な優先度）
+    // Ch.4などはメロディに使われやすいという統計的な重み（任意）
+    
+    if (melodyScore[ch] > maxScore) {
+      maxScore = melodyScore[ch];
+      bestCh = ch;
+    }
+
+    // 5. 減衰 (SC-88は「今」鳴っている音を優先するため、減衰は強めにする)
+    // 0.95だと蓄積が長すぎる場合、0.85〜0.9程度に調整
+    melodyScore[ch] *= 0.8; 
+    
+    // スコアが低くなりすぎないよう下限を設定
+    if(melodyScore[ch] < 0) melodyScore[ch] = 0;
+  }
+
+  // 頻繁な切り替わりを抑えるための微調整
+  if (maxScore > 0.1) {
+    melodyCh = bestCh;
+    slider.value = melodyCh;
+    label.textContent = melodyCh; // 表示は1-16
+  }
+}
+
+
+  let melodyCh = 0;       // null = 自動
+let melodyChManual = false;
+
+const slider = document.getElementById("melodyChSlider");
+const label  = document.getElementById("melodyChLabel");
+
+slider.addEventListener("input", () => {
+  melodyCh = slider.value;
+  
+
+  label.textContent = slider.value;
+
+  
+});
+
+// ===== GM/GS/XG 互換モード =====
+let compatMode = "GM"; // "GM" | "GS" | "XG"
+
+function setCompatMode(mode){
+  compatMode = mode;
+
+  // UI更新
+  document.querySelectorAll(".compatBtn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.mode === mode);
+  });
+  const hint = document.getElementById("compatHint");
+  if(hint) hint.textContent = `Mode: ${mode}`;
+
+  // 内部シンセの初期化（音量/パン/プログラム等）
+  if (synth && typeof synth.resetGM === "function") {
+    synth.resetGM();
+  }
+
+  // 外部MIDI出力にも反映したい場合（OutputModeがMIDI/Bothのとき）
+  // ※ ここは「あなたの既存 outputMode 判定」があるならそこに合わせてOK
+  sendSystemResetForMode(mode);
+
+  log(`[Compat] ${mode} mode selected`);
+}
+
+function sendSystemResetForMode(mode){
+  // selectedMidiOutput が無いなら何もしない
+  if (!selectedMidiOutput) return;
+
+  // 送るSysEx（代表的な初期化）
+  // GM1 System On: F0 7E 7F 09 01 F7
+  const GM_ON = [0xF0,0x7E,0x7F,0x09,0x01,0xF7];
+
+  // Roland GS Reset: F0 41 10 42 12 40 00 7F 00 41 F7
+  const GS_RESET = [0xF0,0x41,0x10,0x42,0x12,0x40,0x00,0x7F,0x00,0x41,0xF7];
+
+  // Yamaha XG System On: F0 43 10 4C 00 00 7E 00 F7
+  const XG_ON = [0xF0,0x43,0x10,0x4C,0x00,0x00,0x7E,0x00,0xF7];
+
+  let msg = GM_ON;
+  if(mode === "GS") msg = GS_RESET;
+  if(mode === "XG") msg = XG_ON;
+
+  try{
+    selectedMidiOutput.send(msg);
+  }catch(e){
+    console.warn("SysEx send failed:", e);
+  }
+}
+
+// メニューのクリックイベント
+document.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".compatBtn");
+  if(!btn) return;
+  setCompatMode(btn.dataset.mode);
+});
+
+const keyboardsWrap = document.getElementById("keyboards");
+
+// chごとの key要素を保持する
+const keyElemsByCh = Array.from({length:16}, () => new Array(128));
+
+const blackNotes = [1,3,6,8,10];
+function isBlack(note){ return blackNotes.includes(note % 12); }
+
+function buildKeyboardForChannel(ch){
+  const row = document.createElement("div");
+  row.className = `kbRow ch${ch}`;
+  const col = document.createElement("div");
+  col.className = "kbCol";
+const kLabel = document.createElement("div");
+  kLabel.textContent = `KNB:`;
+  kLabel.className = `kLabel ch${ch}`;
+  // チャンネル情報エリア 
+  const info = document.createElement("div");
+  info.className = "chInfo";
+
+  const chLabel = document.createElement("div");
+  chLabel.textContent = `Ch ${ch}`;
+  chLabel.className = "kbLabel";
+
+  const inst = document.createElement("div");
+  inst.className = "instName";
+  inst.textContent = "---";
+const bb = document.createElement("div");
+bb.className = "bb";
+  for(let vel = 0; vel < 128; vel++){
+const bar = document.createElement("div");
+bar.className = `bar vel${vel} white ch${ch}`;
+bar.style.left = vel+3+"px";
+bb.appendChild(bar);
+}
+col.appendChild(bb);
+  info.appendChild(chLabel);
+  info.appendChild(inst);
+  
+
+  const kb = document.createElement("div");
+  kb.className = `keyboard ch${ch}`;
+
+  // 既存の鍵盤生成はそのまま
+  let x = 0;
+  for(let note=0; note<128; note++){
+    const key = document.createElement("div");
+    const black = isBlack(note);
+    key.className = `key ${black?"black":"white"}`;
+
+    if(!black){
+      key.style.left = `${x}px`;
+      x += 6;
+    }else{
+      key.style.left = `${x-3.5}px`;
+    }
+
+    kb.appendChild(key);
+    keyElemsByCh[ch][note] = key;
+  }
+  kb.style.width = `${x}px`;
+
+  row.appendChild(info);
+  row.appendChild(kb);
+col.appendChild(kLabel);
+ keyboardsWrap.appendChild(col);
+  keyboardsWrap.appendChild(row);
+const canvas = document.createElement("canvas");
+canvas.width=200;
+canvas.height=50;
+
+row.appendChild(canvas);
+  // ★ チャンネル情報を保存
+  channelUI[ch] = { inst, canvas };
+}
+
+
+function initKeyboards(){
+  keyboardsWrap.innerHTML = "";
+  for(let ch=0; ch<16; ch++){
+    buildKeyboardForChannel(ch);
+  }
+}
+
+initKeyboards();
+function keyOn(ch, note){
+  const k = keyElemsByCh[ch]?.[note];
+  if(k) k.classList.add("active");
+}
+
+function keyOff(ch, note){
+  const k = keyElemsByCh[ch]?.[note];
+  if(k) k.classList.remove("active");
+}
+
+function clearAllKeys(){
+  for(let ch=0; ch<16; ch++){
+    for(let note=0; note<128; note++){
+      keyOff(ch, note);
+    }
+  }
+}
+
+
+  const PROGRAM_GAIN_DB = {
+  lead: 15,
+  brass: 10,
+  strings: 6,
+  piano: 8,
+  pad: -8,
+  bass: -8
+};
+function dbToGain(db) {
+  return Math.pow(10, db / 20);
+}
+
+  let midiAccess = null;
+let selectedMidiOutput = null;
+    function attenuationToGain(att) {
+  // att は 0.1dB 単位
+  return Math.pow(10, -(att / 10) / 20);
+}
+// ===== MIDI INPUT =====
+let selectedMidiInput = null;
+async function initMidiAccess() {
+  try {
+    midiAccess = await navigator.requestMIDIAccess({ sysex: true });
+    const midiOutputSelect = document.getElementById('midiOutputSelect');
+    const midiOutputStatus = document.getElementById('midiOutputStatus');
+    const useMidiOutput = document.getElementById('useMidiOutput');
+    const midiInputSelect = document.getElementById('midiInputSelect');
+const midiInputStatus = document.getElementById('midiInputStatus');
+
+    const inputs = Array.from(midiAccess.inputs.values());
+
+if (inputs.length === 0) {
+  midiInputStatus.textContent = '✗ No MIDI input';
+  midiInputStatus.style.color = '#a44';
+} else {
+  inputs.forEach(input => {
+    const opt = document.createElement('option');
+    opt.value = input.id;
+    opt.textContent = input.name;
+    midiInputSelect.appendChild(opt);
+  });
+  midiInputSelect.disabled = false;
+  midiInputStatus.textContent = `✓ ${inputs.length} input(s)`;
+  midiInputStatus.style.color = '#4a4';
+}
+    // MIDI出力デバイスのリストを作成
+    const outputs = Array.from(midiAccess.outputs.values());
+    
+    if (outputs.length === 0) {
+      midiOutputStatus.textContent = '✗ No MIDI devices found';
+      midiOutputStatus.style.color = '#a44';
+      log('No MIDI output devices found');
+      return;
+    }
+    
+    // セレクトボックスにデバイスを追加
+    outputs.forEach(output => {
+      const option = document.createElement('option');
+      option.value = output.id;
+      option.textContent = output.name;
+      midiOutputSelect.appendChild(option);
+    });
+    
+    midiOutputSelect.disabled = false;
+    midiOutputStatus.textContent = `✓ ${outputs.length} device(s) available`;
+    midiOutputStatus.style.color = '#4a4';
+    log(`Found ${outputs.length} MIDI output device(s)`);
+    
+    // デバイス選択時のイベントハンドラ
+    midiOutputSelect.addEventListener('change', (e) => {
+      const outputId = e.target.value;
+      if (outputId) {
+        selectedMidiOutput = midiAccess.outputs.get(outputId);
+        log(`Selected MIDI output: ${selectedMidiOutput.name}`);
+      } else {
+        selectedMidiOutput = null;
+      }
+    });
+    
+  } catch (err) {
+    log(`MIDI Access Error: ${err.message}`);
+    document.getElementById('midiOutputStatus').textContent = '✗ MIDI not supported';
+    document.getElementById('midiOutputStatus').style.color = '#a44';
+  }
+}
+function isMelodyChannel(ch) {
+  return ch === 0; // 1chをメロディー
+}
+
+// MIDI出力関数
+function sendMidiMessage(status, data1, data2) {
+  if (!selectedMidiOutput) return;
+  
+  try {
+    if (data2 !== undefined && data2 !== null) {
+      selectedMidiOutput.send([status, data1, data2]);
+    } else {
+      selectedMidiOutput.send([status, data1]);
+    }
+  } catch (err) {
+    console.error('MIDI send error:', err);
+  }
+}
+
+// NoteOn MIDI送信
+function sendMidiNoteOn(channel, note, velocity) {
+  const status = 0x90 | (channel & 0x0F);
+  sendMidiMessage(status, note, velocity);
+}
+function createReverbIR(audioCtx, seconds = 1.5, decay = 2.0) {
+  const rate = audioCtx.sampleRate;
+  const length = rate * seconds;
+  const impulse = audioCtx.createBuffer(2, length, rate);
+
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      const t = i / length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, decay);
+    }
+  }
+  return impulse;
+}
+
+// NoteOff MIDI送信
+function sendMidiNoteOff(channel, note) {
+  const status = 0x80 | (channel & 0x0F);
+  sendMidiMessage(status, note, 0);
+}
+
+// Program Change MIDI送信
+function sendMidiProgramChange(channel, program) {
+  const status = 0xC0 | (channel & 0x0F);
+  sendMidiMessage(status, program);
+}
+
+// All Notes Off送信（停止時用）
+function sendAllNotesOff() {
+  if (!selectedMidiOutput) return;
+  
+  for (let ch = 0; ch < 16; ch++) {
+    // Control Change 123 (All Notes Off)
+    const status = 0xB0 | ch;
+    sendMidiMessage(status, 123, 0);
+  }
+}
+
+
+
+
+midiInputSelect.addEventListener('change', e => {
+  if (selectedMidiInput) {
+    selectedMidiInput.onmidimessage = null;
+  }
+  selectedMidiInput = midiAccess.inputs.get(e.target.value);
+  if (selectedMidiInput) {
+    selectedMidiInput.onmidimessage = handleRealtimeMidi;
+    log(`MIDI Input selected: ${selectedMidiInput.name}`);
+  }
+});
+function handleRealtimeMidi(e) {
+  if (!synth) return;
+
+  const [status, d1, d2] = e.data;
+  const type = status & 0xF0;
+  const ch = status & 0x0F;
+  const now = audioCtx.currentTime;
+
+  switch (type) {
+    case 0x90: // Note On
+      if (d2 === 0) {
+        synth.noteOff(ch, d1, now);
+      } else {
+        synth.noteOn(ch, d1, d2, now);
+      }
+      break;
+
+    case 0x80: // Note Off
+      synth.noteOff(ch, d1, now);
+      break;
+
+    case 0xB0: // CC
+      // 必要なら拡張（ModWheel, Volumeなど）
+      break;
+
+    case 0xC0: // Program Change
+      synth.programChange(ch, d1);
+      break;
+  }
+}
+
+let rootKey = null;
+// ============ SoundFont Parser ============
+class SoundFontParser {
+  constructor(arrayBuffer) {
+    this.data = new DataView(arrayBuffer);
+    this.offset = 0;
+    this.presets = [];
+    this.presetBags = [];
+    this.presetGens = [];
+    this.instruments = [];
+    this.instrumentBags = [];
+    this.instrumentGens = [];
+    this.samples = [];
+    this.sampleData = null;
+  }
+
+  checkBounds(bytes) {
+    if (this.offset + bytes > this.data.byteLength) {
+      throw new Error(`Read beyond file bounds: offset=${this.offset}, need=${bytes}, size=${this.data.byteLength}`);
+    }
+  }
+
+  readString(len) {
+    this.checkBounds(len);
+    let str = '';
+    for (let i = 0; i < len; i++) {
+      const c = this.data.getUint8(this.offset++);
+      if (c !== 0) str += String.fromCharCode(c);
+    }
+    return str;
+  }
+
+  readUint32() {
+    this.checkBounds(4);
+    const v = this.data.getUint32(this.offset, true);
+    this.offset += 4;
+    return v;
+  }
+
+  readUint16() {
+    this.checkBounds(2);
+    const v = this.data.getUint16(this.offset, true);
+    this.offset += 2;
+    return v;
+  }
+
+  readInt16() {
+    this.checkBounds(2);
+    const v = this.data.getInt16(this.offset, true);
+    this.offset += 2;
+    return v;
+  }
+
+  readUint8() {
+    this.checkBounds(1);
+    return this.data.getUint8(this.offset++);
+  }
+
+  findChunk(id, startOffset = 0) {
+    this.offset = startOffset;
+    while (this.offset < this.data.byteLength - 8) {
+      const chunkId = this.readString(4);
+      const size = this.readUint32();
+      if (chunkId === id) {
+        return { offset: this.offset, size };
+      }
+      this.offset += size;
+    }
+    return null;
+  }
+
+  findSubChunk(parentOffset, parentSize, id) {
+    const endOffset = parentOffset + parentSize;
+    this.offset = parentOffset;
+    
+    while (this.offset < endOffset - 8 && this.offset + 8 <= this.data.byteLength) {
+      try {
+        const chunkId = this.readString(4);
+        const size = this.readUint32();
+        if (chunkId === id) {
+          return { offset: this.offset, size };
+        }
+        this.offset += size;
+      } catch (e) {
+        console.warn('Error reading sub-chunk:', e.message);
+        break;
+      }
+    }
+    return null;
+  }
+
+  parse() {
+    try {
+      // RIFFヘッダー確認
+      const riff = this.readString(4);
+      if (riff !== 'RIFF') throw new Error('Not a valid RIFF file');
+      
+      const fileSize = this.readUint32();
+      const sfbk = this.readString(4);
+      if (sfbk !== 'sfbk') throw new Error('Not a SoundFont file');
+
+      console.log('SF2 file detected, size:', fileSize);
+
+      // LISTチャンクを探す
+      this.offset = 12; // RIFF header後
+      
+      while (this.offset < this.data.byteLength - 8 && this.offset + 8 <= this.data.byteLength) {
+        try {
+          const chunkId = this.readString(4);
+          const chunkSize = this.readUint32();
+          const chunkDataStart = this.offset;
+          
+          console.log(`Found chunk: ${chunkId}, size: ${chunkSize}, offset: ${chunkDataStart}`);
+          
+          // チャンクサイズの妥当性チェック
+          if (chunkSize > this.data.byteLength - chunkDataStart + 8) {
+            console.warn(`Invalid chunk size: ${chunkSize}, skipping`);
+            break;
+          }
+          
+          if (chunkId === 'LIST' && chunkSize >= 4) {
+            const listType = this.readString(4);
+            console.log(`  LIST type: ${listType}`);
+            
+            if (listType === 'sdta') {
+              // サンプルデータ
+              const smplChunk = this.findSubChunk(this.offset, chunkSize - 4, 'smpl');
+              if (smplChunk && smplChunk.offset + smplChunk.size <= this.data.byteLength) {
+                this.offset = smplChunk.offset;
+                const start = this.offset;
+                const sampleCount = Math.floor(smplChunk.size / 2);
+                this.sampleData = new Int16Array(this.data.buffer, start, sampleCount);
+                console.log('Sample data loaded:', smplChunk.size, 'bytes,', sampleCount, 'samples');
+              }
+            } else if (listType === 'pdta') {
+              // プリセット/インストゥルメントデータ
+              console.log('Processing pdta chunk...');
+              this.parsePdta(this.offset, chunkSize - 4);
+            }
+          }
+          
+          this.offset = chunkDataStart + chunkSize;
+          
+          // アライメント調整（ワード境界）
+          if (chunkSize % 2 === 1) {
+            this.offset++;
+          }
+        } catch (e) {
+          console.warn('Error processing chunk:', e.message);
+          break;
+        }
+      }
+
+      if (this.presets.length === 0) {
+        console.warn('No presets found');
+      }
+      
+      if (this.samples.length === 0) {
+        console.warn('No samples found');
+      }
+
+      return {
+        presets: this.presets,
+        presetBags: this.presetBags,
+        presetGens: this.presetGens,
+        instruments: this.instruments,
+        instrumentBags: this.instrumentBags,
+        instrumentGens: this.instrumentGens,
+        samples: this.samples,
+        sampleData: this.sampleData
+      };
+    } catch (e) {
+      console.error('Parse error:', e.message, 'at offset:', this.offset);
+      throw e;
+    }
+  }
+
+  parsePdta(startOffset, size) {
+    const endOffset = Math.min(startOffset + size, this.data.byteLength);
+    this.offset = startOffset;
+    
+    while (this.offset < endOffset - 8 && this.offset + 8 <= this.data.byteLength) {
+      try {
+        const subId = this.readString(4);
+        const subSize = this.readUint32();
+        const subStart = this.offset;
+        
+        console.log(`  pdta sub-chunk: ${subId}, size: ${subSize}, offset: ${subStart}`);
+        
+        if (subSize > this.data.byteLength - subStart + 8 || subSize < 0) {
+          console.warn(`Invalid sub-chunk size: ${subSize}, skipping rest of pdta`);
+          break;
+        }
+
+        if (subId === 'phdr' && subSize >= 38) {
+          this.parsePresetHeaders(subSize);
+        } else if (subId === 'pbag' && subSize >= 4) {
+          this.parsePresetBags(subSize);
+        } else if (subId === 'pgen' && subSize >= 4) {
+          this.parsePresetGens(subSize);
+        } else if (subId === 'inst' && subSize >= 22) {
+          this.parseInstruments(subSize);
+        } else if (subId === 'ibag' && subSize >= 4) {
+          this.parseInstrumentBags(subSize);
+        } else if (subId === 'igen' && subSize >= 4) {
+          this.parseInstrumentGens(subSize);
+        } else if (subId === 'shdr' && subSize >= 46) {
+          this.parseSampleHeaders(subSize);
+        }
+
+        this.offset = subStart + subSize;
+        
+        if (subSize % 2 === 1) {
+          this.offset++;
+        }
+      } catch (e) {
+        console.warn('Error parsing pdta sub-chunk:', e.message);
+        break;
+      }
+    }
+  }
+
+  parsePresetBags(size) {
+    const count = Math.floor(size / 4);
+    console.log(`  Parsing ${count} preset bags`);
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 4 > this.data.byteLength) break;
+        const genNdx = this.readUint16();
+        const modNdx = this.readUint16();
+        this.presetBags.push({ genNdx, modNdx });
+      }
+    } catch (e) {
+      console.warn('Error parsing preset bags:', e.message);
+    }
+  }
+
+  parsePresetGens(size) {
+    const count = Math.floor(size / 4);
+    console.log(`  Parsing ${count} preset generators`);
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 4 > this.data.byteLength) break;
+        const oper = this.readUint16();
+        const amount = this.readUint16();
+        this.presetGens.push({ oper, amount });
+      }
+    } catch (e) {
+      console.warn('Error parsing preset gens:', e.message);
+    }
+  }
+
+  parseInstrumentBags(size) {
+    const count = Math.floor(size / 4);
+    console.log(`  Parsing ${count} instrument bags`);
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 4 > this.data.byteLength) break;
+        const genNdx = this.readUint16();
+        const modNdx = this.readUint16();
+        this.instrumentBags.push({ genNdx, modNdx });
+      }
+    } catch (e) {
+      console.warn('Error parsing instrument bags:', e.message);
+    }
+  }
+
+  parseInstrumentGens(size) {
+    const count = Math.floor(size / 4);
+    console.log(`  Parsing ${count} instrument generators`);
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 4 > this.data.byteLength) break;
+        const oper = this.readUint16();
+        const amount = this.readUint16();
+        this.instrumentGens.push({ oper, amount });
+      }
+    } catch (e) {
+      console.warn('Error parsing instrument gens:', e.message);
+    }
+  }
+
+  parsePresetHeaders(size) {
+    const count = Math.floor(size / 38);
+    console.log(`  Parsing ${count} preset headers`);
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 38 > this.data.byteLength) {
+          console.warn('Reached end of file while parsing presets');
+          break;
+        }
+        
+        const name = this.readString(20);
+        const preset = this.readUint16();
+        const bank = this.readUint16();
+        const presetBagNdx = this.readUint16();
+        const library = this.readUint32();
+        const genre = this.readUint32();
+        const morphology = this.readUint32();
+        
+        // 終端プリセットをスキップ
+        if (i < count - 1) {
+          this.presets.push({ name, preset, bank, presetBagNdx });
+          if (i < 5) console.log(`    Preset: ${name} (${bank}:${preset})`);
+        }
+      }
+    } catch (e) {
+      console.warn('Error parsing preset headers:', e.message);
+    }
+  }
+
+  parseInstruments(size) {
+    const count = Math.floor(size / 22);
+    console.log(`  Parsing ${count} instruments`);
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 22 > this.data.byteLength) {
+          console.warn('Reached end of file while parsing instruments');
+          break;
+        }
+        
+        const name = this.readString(20);
+        const instBagNdx = this.readUint16();
+        
+        // 終端インストゥルメントをスキップ
+        if (i < count - 1) {
+          this.instruments.push({ name, instBagNdx });
+          if (i < 5) console.log(`    Instrument: ${name}`);
+        }
+      }
+    } catch (e) {
+      console.warn('Error parsing instruments:', e.message);
+    }
+  }
+
+  parseSampleHeaders(size) {
+    const count = Math.floor(size / 46);
+    console.log(`  Parsing ${count} sample headers (${size} bytes total)`);
+    
+    const startingOffset = this.offset;
+    const tempSamples = [];
+    
+    try {
+      for (let i = 0; i < count; i++) {
+        if (this.offset + 46 > this.data.byteLength) {
+          console.warn(`Reached end of file while parsing samples (${i}/${count})`);
+          break;
+        }
+        
+        const sampleOffset = this.offset;
+        
+        // SF2仕様: 20バイト名前、各4バイト×5、4バイト、1バイト、1バイト、2バイト、2バイト = 46バイト
+        const name = this.readString(20);      // 20 bytes
+        const start = this.readUint32();        // 4 bytes
+        const end = this.readUint32();          // 4 bytes  
+        const startLoop = this.readUint32();    // 4 bytes
+        const endLoop = this.readUint32();      // 4 bytes
+        const sampleRate = this.readUint32();   // 4 bytes
+        const originalPitch = this.readUint8(); // 1 byte
+        const pitchCorrection = this.readInt8(); // 1 byte (符号付き8ビット)
+        const sampleLink = this.readUint16();   // 2 bytes
+        const sampleType = this.readUint16();   // 2 bytes
+        let validOriginalPitch = originalPitch;
+      if (originalPitch < 0 || originalPitch > 127) {
+        console.warn(`Sample "${name}": Invalid Root Key ${originalPitch}, using 60 (Middle C)`);
+        validOriginalPitch = 60;
+      }
+      console.log(`Sample "${name}": Original Pitch = ${originalPitch}, Valid Pitch = ${validOriginalPitch}`);
+      const zure = 60 - originalPitch;
+      // ピッチ補正の妥当性チェック
+      let validPitchCorrection = pitchCorrection;
+      if (pitchCorrection < -99 || pitchCorrection > 99) {
+        console.warn(`Sample "${name}": Invalid pitch correction ${pitchCorrection}, using 0`);
+        validPitchCorrection = 0;
+      }
+        // オフセット確認（46バイト進んだはず）
+        const bytesRead = this.offset - sampleOffset;
+        if (bytesRead !== 46) {
+          console.error(`Sample ${i}: Read ${bytesRead} bytes instead of 46!`);
+        }
+
+        tempSamples.push({
+          name: name.trim(),
+          start,
+          end,
+          startLoop,
+          endLoop,
+          sampleRate,
+          originalPitch,
+          pitchCorrection,
+          sampleType,
+          zure: zure,
+          attenuation: 0  
+        });
+      }
+      
+      console.log(`  Read ${tempSamples.length} sample headers`);
+      
+      // 最後のサンプル（EOS）を除外して検証
+      for (let i = 0; i < tempSamples.length - 1; i++) {
+        const sample = tempSamples[i];
+        
+        if (i < 5) {
+          console.log(`    Sample ${i}: "${sample.name}"`);
+          console.log(`      Range: ${sample.start}-${sample.end} (${sample.end-sample.start} samples)`);
+          console.log(`      Loop: ${sample.startLoop}-${sample.endLoop}`);
+          console.log(`      Rate: ${sample.sampleRate}Hz, Pitch: ${sample.originalPitch}, Correction: ${sample.pitchCorrection}`);
+          console.log(`      Type: ${sample.sampleType}`);
+        }
+
+        // 終端サンプル（EOS）をスキップ
+        const isEOS = sample.name === 'EOS' || sample.name === '';
+        
+        // 妥当性チェック
+        const isValidRange = sample.end > sample.start && sample.start >= 0;
+        const isValidRate = sample.sampleRate >= 3000 && sample.sampleRate <= 192000;
+        const isValidPitch = sample.originalPitch >= 0 && sample.originalPitch <= 127;
+        const lengthCheck = (sample.end - sample.start) < 100000000;
+        
+        if (!isEOS && isValidRange && isValidRate && lengthCheck) {
+          this.samples.push({
+            name: sample.name,
+            start: sample.start,
+            end: sample.end,
+            startLoop: sample.startLoop,
+            endLoop: sample.endLoop,
+            sampleRate: sample.sampleRate,
+            originalPitch: isValidPitch ? sample.originalPitch : 60,
+            pitchCorrection: sample.pitchCorrection,
+            zure: sample.zure,
+            attenuation: 0
+          });
+        } else if (i < 5) {
+          const reason = isEOS ? 'EOS' : 
+                        !isValidRange ? `invalid range (${sample.start}-${sample.end})` :
+                        !isValidRate ? `invalid rate (${sample.sampleRate}Hz)` :
+                        !lengthCheck ? 'too long' : 'invalid';
+          console.log(`      -> Skipped (${reason})`);
+        }
+      }
+      
+      console.log(`  Successfully parsed ${this.samples.length} valid samples out of ${tempSamples.length - 1}`);
+    } catch (e) {
+      console.error('Error parsing sample headers:', e.message, 'at offset:', this.offset);
+      console.error('Stack:', e.stack);
+    }
+  }
+  
+  readInt8() {
+    this.checkBounds(1);
+    const v = this.data.getInt8(this.offset);
+    this.offset += 1;
+    return v;
+  }
+}
+function setupHiDPICanvas(canvas, cssW, cssH){
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.style.width  = cssW + "px";
+  canvas.style.height = cssH + "px";
+
+  canvas.width  = cssW * dpr;
+  canvas.height = cssH * dpr;
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  return ctx;
+}
+
+// ============ SoundFont Synth ============
+class SoundFontSynth {
+  constructor(audioCtx, soundFont) {
+    this.audioCtx = audioCtx;
+    this.sf = soundFont;
+    this.master = audioCtx.createGain();
+    this.master.gain.value = 0.15; // 実機相当
+this.channelPanners = [];
+    this.master.connect(audioCtx.destination);
+    
+    this.channelAnalysers = [];
+    this.channelGains = [];
+    for (let i = 0; i < 16; i++) {
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+analyser.smoothingTimeConstant = 0.85;
+      const gain = audioCtx.createGain();
+      gain.gain.value = 1.0;
+const pan = audioCtx.createStereoPanner();
+  pan.pan.value = 0; // center
+      gain.connect(analyser);
+pan.connect(analyser);
+      analyser.connect(this.master);
+
+      this.channelAnalysers.push(analyser);
+      this.channelGains.push(gain);
+this.channelPanners.push(pan);
+    }
+    this.channelProgramGain = new Array(16).fill(1.0);
+
+   this.channelPrograms      = new Array(16).fill(0);
+this.channelVolume        = new Array(16).fill(100);
+this.channelExpression    = new Array(16).fill(127);
+this.channelPan           = new Array(16).fill(64);
+this.channelPitchBend     = new Array(16).fill(0);
+this.channelBankMSB       = new Array(16).fill(0);
+this.channelBankLSB       = new Array(16).fill(0);
+this.channelRPN           = new Array(16).fill(null);
+this.melodyBoost = new Array(16).fill(1.0);
+
+
+// デフォルトGM慣例
+this.melodyBoost[0] = 2.8; // Lead
+this.melodyBoost[1] = 2.4;
+this.melodyBoost[2] = 2.4;
+this.melodyBoost[3] = 2.4;
+this.melodyBoost[9] = 1.0; // Drum
+this.reverb = audioCtx.createConvolver();
+this.reverb.buffer = createReverbIR(audioCtx, 1.6, 2.2);
+
+this.reverbGain = audioCtx.createGain();
+this.reverbGain.gain.value = 0.25; // リバーブ量
+this.chorusDelay = audioCtx.createDelay(0.03);
+this.chorusDelay.delayTime.value = 0.015;
+
+this.chorusLFO = audioCtx.createOscillator();
+this.chorusLFO.frequency.value = 0.8;
+
+this.chorusLFODepth = audioCtx.createGain();
+this.chorusLFODepth.gain.value = 0.003; // 揺れ幅
+this.lastPitchBend = new Array(16).fill(8192); // センターで初期化
+
+this.chorusLFO.connect(this.chorusLFODepth);
+this.chorusLFODepth.connect(this.chorusDelay.delayTime);
+this.chorusLFO.start();
+
+this.chorusGain = audioCtx.createGain();
+this.chorusGain.gain.value = 0.0; // コーラス量(0..1)
+
+this.chorusDelay.connect(this.chorusGain);
+this.chorusGain.connect(this.master);
+
+// ★GM CC用の値（0..127）
+this.channelReverbSend = new Array(16).fill(40); // CC91
+this.channelChorusSend = new Array(16).fill(0);  // CC93
+this.reverb.connect(this.reverbGain);
+this.reverbGain.connect(this.master);
+this.recordDest = null;
+this.channelPolyCount = new Array(16).fill(0);
+
+    this.activeNotes = new Map();
+   
+    // ★チャンネルごとのSend（固定）
+this.revSendByCh = new Array(16);
+this.choSendByCh = new Array(16);
+
+for (let ch = 0; ch < 16; ch++) {
+  const r = audioCtx.createGain();
+  r.gain.value = 0.0;
+  r.connect(this.reverb);
+  this.revSendByCh[ch] = r;
+
+  const c = audioCtx.createGain();
+  c.gain.value = 0.0;
+  c.connect(this.chorusDelay);
+  this.choSendByCh[ch] = c;
+}
+
+    // AudioBufferキャッシュ
+    this.sampleBuffers = new Map();
+    
+    // プログラム番号ごとのサンプルマッピング
+    this.programToSamples = new Map();
+    
+    this.prepareSamples();
+    this.buildProgramMapping();
+   this.worklet = new AudioWorkletNode(
+  this.audioCtx,
+  "sf2-processor",
+  {outputChannelCount:[2]}
+);
+
+this.worklet.connect(this.master);
+  
+
+  }
+pitchBend(ch, value14) {
+  const normalized = (value14 - 8192) / 8192;
+  this.channelPitchBend[ch] = normalized;
+
+  const bendRange = 2; // ±2半音
+
+  this.activeNotes.forEach(noteObj => {
+    if (noteObj.channel !== ch) return;
+
+    const bendSemitone = normalized * bendRange;
+    const rate = Math.pow(2, bendSemitone / 12);
+
+    noteObj.source.playbackRate.value = rate;
+  });
+}
+pitchBend(ch, value14) {
+  const normalized = (value14 - 8192) / 8192;
+  this.channelPitchBend[ch] = normalized;
+
+  const bendRange = 2; // ±2 semitone
+
+  this.activeNotes.forEach(noteObj => {
+    if (noteObj.channel !== ch) return;
+
+    const bendSemitone = normalized * bendRange;
+    const bendRate = Math.pow(2, bendSemitone / 12);
+
+    noteObj.source.playbackRate.value =
+      noteObj.baseRate * bendRate;   // ← ここが重要
+  });
+}
+pitchBend(channel, value) {
+  const now = this.audioCtx.currentTime;
+
+  // 前回値を保存
+  const start = this.lastPitchBend[channel];
+  const end = value;
+  this.lastPitchBend[channel] = value;
+
+  // 変化量（14bit → semitone）
+  const bendRange = 2; // ±2 semitone
+  const startBend = (start - 8192) / 8192 * bendRange;
+  const endBend   = (end   - 8192) / 8192 * bendRange;
+
+  // 50ms かけてゆっくり変化
+  const duration = 0.0005;
+
+  for (const [key, noteObj] of this.activeNotes) {
+    if (noteObj.channel !== channel) continue;
+
+    const { note, source, entry } = noteObj;
+
+    // ピッチ計算（noteOn と同じ式）
+    const basePitch =
+      note
+      - entry.rootKey
+      + entry.coarseTune
+      + entry.fineTune / 100
+      + (entry.pitchCorrection ?? 0) / 100;
+
+    const startRate = Math.pow(2, (basePitch + startBend) / 12);
+    const endRate   = Math.pow(2, (basePitch + endBend) / 12);
+
+    source.playbackRate.cancelScheduledValues(now);
+    source.playbackRate.setValueAtTime(startRate, now);
+    source.playbackRate.linearRampToValueAtTime(endRate, now + duration);
+    let start = null;
+const durations = 400; // 0.05秒
+const targetValue = endBend;
+
+function animate(timestamp) {
+  if (!start) start = timestamp;
+  let progress = timestamp - start;
+  let yes = 0;
+  // 経過割合を計算 (0.0 〜 1.0)
+  let fraction = Math.min(progress / durations, 1);
+  
+  // 値を更新
+  let currentVal = fraction * targetValue*50;
+  
+document.querySelector(`.keyboard.ch${channel}`).style.left=0+currentVal+'px';
+  if (progress < durations) {
+    requestAnimationFrame(animate);
+yes = 1;
+  }
+  if(yes == 0){
+  currentVal = 0;
+  document.querySelector(`.keyboard.ch${channel}`).style.left=0+currentVal+'px';
+  }
+}
+
+requestAnimationFrame(animate);
+
+  }
+}
+
+  prepareSamples() {
+    if (!this.sf.sampleData || !this.sf.samples) {
+      console.warn('No sample data available');
+      return;
+    }
+    
+    console.log('Preparing audio buffers from', this.sf.samples.length, 'samples...');
+    console.log('Sample data length:', this.sf.sampleData.length);
+    
+    let validSamples = 0;
+    let invalidSamples = 0;
+    
+    for (let i = 0; i < this.sf.samples.length; i++) {
+      const sample = this.sf.samples[i];
+      
+      // デバッグ: 最初の5サンプルを詳細表示
+      if (i < 5) {
+        console.log(`Sample ${i}: "${sample.name}"`);
+        console.log(`  Range: ${sample.start} - ${sample.end} (length: ${sample.end - sample.start})`);
+        console.log(`  Loop: ${sample.startLoop} - ${sample.endLoop}`);
+        console.log(`  Rate: ${sample.sampleRate}Hz, Pitch: ${sample.originalPitch}`);
+      }
+      
+      // サンプルの妥当性チェック
+      if (sample.start >= sample.end) {
+        if (i < 5) console.log(`  ✗ Invalid range`);
+        invalidSamples++;
+        continue;
+      }
+      
+      const length = sample.end - sample.start;
+      
+      if (length <= 0 || length > 100000000) {
+        if (i < 5) console.log(`  ✗ Invalid length: ${length}`);
+        invalidSamples++;
+        continue;
+      }
+      
+      if (sample.end > this.sf.sampleData.length) {
+        if (i < 5) console.log(`  ✗ Out of bounds: ${sample.end} > ${this.sf.sampleData.length}`);
+        invalidSamples++;
+        continue;
+      }
+      
+      let sampleRate = sample.sampleRate;
+      
+      if (!sampleRate || sampleRate < 3000 || sampleRate > 768000 || !isFinite(sampleRate)) {
+        if (i < 5) console.log(`  ⚠ Invalid rate ${sampleRate}Hz, using 44100Hz`);
+        sampleRate = 44100;
+      }
+      
+      try {
+        const buffer = this.audioCtx.createBuffer(1, length, sampleRate);
+        const channelData = buffer.getChannelData(0);
+        
+        // サンプルデータをコピー
+        let hasNonZero = false;
+        for (let j = 0; j < length; j++) {
+          const sampleValue = this.sf.sampleData[sample.start + j];
+          channelData[j] = sampleValue / 32768.0;
+          if (sampleValue !== 0) hasNonZero = true;
+        }
+        
+        // 無音サンプルをチェック
+        if (!hasNonZero) {
+          if (i < 5) console.log(`  ⚠ Silent sample`);
+        }
+        
+        let loopStart = sample.startLoop - sample.start;
+        let loopEnd = sample.endLoop - sample.start;
+        
+        if (loopStart < 0 || loopStart >= length) loopStart = 0;
+        if (loopEnd <= loopStart || loopEnd > length) loopEnd = 0;
+        
+        this.sampleBuffers.set(i, {
+          buffer,
+          loopStart,
+          loopEnd,
+          originalPitch: sample.originalPitch || 60,
+            pitchCorrection: sample.pitchCorrection ?? 0,
+          sampleRate,
+          name: sample.name,
+          zure: sample.zure,
+          attenuation: 0  
+        });
+        
+        validSamples++;
+        if (i < 5) console.log(`  ✓ Buffer created successfully`);
+      } catch (e) {
+        if (i < 5) console.log(`  ✗ Failed:`, e.message);
+        invalidSamples++;
+      }
+    }
+    
+    console.log(`Sample preparation complete:`);
+    console.log(`  Valid: ${validSamples}`);
+    console.log(`  Invalid: ${invalidSamples}`);
+    console.log(`  Total buffers: ${this.sampleBuffers.size}`);
+  }
+setPan(ch, value) {
+  // value: 0..127 → -1..+1
+  const p = (value - 64) / 64;
+  this.channelPanners[ch].pan.setTargetAtTime(
+    p,
+    this.audioCtx.currentTime,
+    0.01
+  );
+}
+
+controlChange(ch, cc, val) {
+  switch (cc) {
+    case 7:   // Volume
+      this.channelVolume[ch] = val;
+      break;
+
+    case 10:  // Pan
+      this.setPan(ch,val);
+      this.channelPan[ch] = val;
+      break;
+
+    case 11:  // Expression
+      this.channelExpression[ch] = val;
+      break;
+
+    case 91: // Reverb Send
+  this.channelReverbSend[ch] = val;
+  this.revSendByCh[ch].gain.setTargetAtTime(val / 127, this.audioCtx.currentTime, 0.02);
+  break;
+
+case 93: // Chorus Send
+  this.channelChorusSend[ch] = val;
+  this.choSendByCh[ch].gain.setTargetAtTime(val / 127, this.audioCtx.currentTime, 0.02);
+  break;
+
+
+    case 64:  // Sustain
+      this.sustain = val >= 64;
+      break;
+
+    case 121: // Reset All Controllers
+      this.channelVolume[ch] = 100;
+      this.channelExpression[ch] = 127;
+      this.channelPan[ch] = 64;
+      this.channelPitchBend[ch] = 0;
+      this.channelReverbSend[ch] = 40;
+      this.channelChorusSend[ch] = 0;
+      break;
+
+    case 123: // All Notes Off
+      this.allNotesOff(ch);
+      break;
+  }
+}
+
+
+  buildProgramMapping() {
+    console.log('Building program to sample mapping...');
+    console.log(`  Presets: ${this.sf.presets.length}`);
+    console.log(`  Instruments: ${this.sf.instruments.length}`);
+    console.log(`  Samples: ${this.sf.samples.length}`);
+    console.log(`  Valid sample buffers: ${this.sampleBuffers.size}`);
+    console.log(`  PresetBags: ${this.sf.presetBags.length}`);
+    console.log(`  PresetGens: ${this.sf.presetGens.length}`);
+    console.log(`  InstrumentBags: ${this.sf.instrumentBags.length}`);
+    console.log(`  InstrumentGens: ${this.sf.instrumentGens.length}`);
+    
+    // プリセットからインストゥルメント、サンプルへのマッピングを構築
+    for (let presetIdx = 0; presetIdx < this.sf.presets.length; presetIdx++) {
+      const preset = this.sf.presets[presetIdx];
+      const program = preset.preset;
+      // buildProgramMapping() 冒頭の preset ループ内
+const bank = preset.bank;
+
+if (compatMode === "GM") {
+  if (bank !== 0 && bank !== 128) continue;
+}
+
+      
+      // 通常はbank 0を使用
+      //if (bank !== 0 && bank !== 128) continue;
+      
+      // ドラムキット（bank 128）は後で処理
+      const isDrum = (bank === 128);
+      
+      if (presetIdx < 10 || program === 0) {
+        console.log(`\nPreset ${presetIdx}: "${preset.name}" (bank=${bank}, program=${program})`);
+      }
+      
+      const samplesForProgram = new Array(128);
+      
+      // プリセットバッグからインストゥルメントを取得
+      const bagStart = preset.presetBagNdx;
+      const nextPreset = this.sf.presets[presetIdx + 1];
+      const bagEnd = nextPreset ? nextPreset.presetBagNdx : this.sf.presetBags.length;
+      
+      if (presetIdx < 10 || program === 0) {
+        console.log(`  Preset bags: ${bagStart} to ${bagEnd}`);
+      }
+      
+      for (let bagIdx = bagStart; bagIdx < bagEnd; bagIdx++) {
+        const bag = this.sf.presetBags[bagIdx];
+        if (!bag) continue;
+        
+        const genStart = bag.genNdx;
+        const genEnd = this.sf.presetBags[bagIdx + 1]?.genNdx || this.sf.presetGens.length;
+        
+        let keyRange = { lo: 0, hi: 127 };
+        let instrumentIdx = null;
+        let attenuation = 0;
+        // ジェネレータを解析
+        for (let genIdx = genStart; genIdx < genEnd; genIdx++) {
+          const gen = this.sf.presetGens[genIdx];
+          if (!gen) continue;
+          if (gen.oper === 48) {
+         attenuation += gen.amount; // 0.1dB単位
+}
+
+          if (gen.oper === 41) { // instrument
+            instrumentIdx = gen.amount;
+          } else if (gen.oper === 43) { // keyRange
+            keyRange.lo = gen.amount & 0xFF;
+            keyRange.hi = (gen.amount >> 8) & 0xFF;
+          }
+        }
+        
+        if (instrumentIdx === null) continue;
+        
+        if (presetIdx < 10 || program === 0) {
+          console.log(`    Bag ${bagIdx}: instrument=${instrumentIdx}, keys=${keyRange.lo}-${keyRange.hi}`);
+        }
+        
+        // インストゥルメントからサンプルを取得
+        if (instrumentIdx < this.sf.instruments.length) {
+           
+          const inst = this.sf.instruments[instrumentIdx];
+          const instBagStart = inst.instBagNdx;
+          const nextInst = this.sf.instruments[instrumentIdx + 1];
+          const instBagEnd = nextInst ? nextInst.instBagNdx : this.sf.instrumentBags.length;
+         
+          for (let iBagIdx = instBagStart; iBagIdx < instBagEnd; iBagIdx++) {
+            const iBag = this.sf.instrumentBags[iBagIdx];
+            if (!iBag) continue;
+             let coarseTune = 0;
+let fineTune = 0;
+ let rootKey = null;
+            const iGenStart = iBag.genNdx;
+            const iGenEnd = this.sf.instrumentBags[iBagIdx + 1]?.genNdx || this.sf.instrumentGens.length;
+            function s16(v) {
+  return (v & 0x8000) ? v - 0x10000 : v;
+}
+            let iKeyRange = { lo: 0, hi: 127 };
+            let sampleIdx = null;
+            let attenuation = 0;
+            for (let iGenIdx = iGenStart; iGenIdx < iGenEnd; iGenIdx++) {
+              const iGen = this.sf.instrumentGens[iGenIdx];
+              if (!iGen) continue;
+if (iGen.oper === 58) { // overridingRootKey
+    rootKey = iGen.amount;
+  }
+if (iGen.oper === 51) coarseTune += s16(iGen.amount); // semitone
+if (iGen.oper === 52) fineTune   += s16(iGen.amount); // cent
+               if (iGen.oper === 48) {
+         attenuation += iGen.amount; // 0.1dB単位
+}
+              if (iGen.oper === 53) { // sampleID
+                sampleIdx = iGen.amount;
+              } else if (iGen.oper === 43) { // keyRange
+                iKeyRange.lo = iGen.amount & 0xFF;
+                iKeyRange.hi = (iGen.amount >> 8) & 0xFF;
+              }
+            }
+           
+            if (sampleIdx === null) continue;
+            
+            // キーレンジを統合
+            const finalLo = Math.max(keyRange.lo, iKeyRange.lo);
+            const finalHi = Math.min(keyRange.hi, iKeyRange.hi);
+            
+            // ★重要: sampleBuffersに実際に存在するかチェック
+            if (this.sampleBuffers.has(sampleIdx)) {
+              const sampleInfo = this.sampleBuffers.get(sampleIdx);
+ if (rootKey === null) {
+  rootKey = sampleInfo.originalPitch;
+}
+              if (presetIdx < 10 || program === 0) {
+                console.log(`      Sample ${sampleIdx} (${sampleInfo?.name}) -> keys ${finalLo}-${finalHi} ${sampleInfo?.zure}`);
+              }
+              
+             for (let note = finalLo; note <= finalHi; note++) {
+const safeRootKey =
+  Number.isFinite(rootKey)
+    ? rootKey
+    : Number.isFinite(sampleInfo.originalPitch)
+      ? sampleInfo.originalPitch
+      : 60; // ← 最終フォールバック（C4）
+
+  const newEntry = {
+    sampleIdx,
+    rootKey:safeRootKey,
+pitchCorrection: sampleInfo.pitchCorrection ?? 0,
+    coarseTune:coarseTune,
+    fineTune:0
+  };
+
+  const prev = samplesForProgram[note];
+  if (!prev) {
+    samplesForProgram[note] = newEntry;
+  } else {
+    const prevDiff = Math.abs(prev.rootKey - note);
+const newDiff  = Math.abs(newEntry.rootKey - note);
+
+    if (newDiff < prevDiff) {
+      samplesForProgram[note] = newEntry;
+    }
+  }
+}
+
+              
+
+            } else {
+              // サンプルが無効な場合はスキップ
+              if (presetIdx < 3) {
+                console.warn(`      Sample ${sampleIdx} not available (invalid or out of range)`);
+              }
+            }
+          }
+        }
+      }
+      
+      // マッピングを保存
+      const mappedNotes = samplesForProgram.filter(s => s !== undefined).length;
+      if (mappedNotes > 0) {
+       const key = `${bank}:${program}`;
+this.programToSamples.set(key, samplesForProgram);
+
+        if (presetIdx < 10 || program === 0) {
+          console.log(`  -> Mapped ${mappedNotes}/128 notes to samples`);
+        }
+      } else {
+        if (presetIdx < 10 || program === 0) {
+          console.warn(`  -> No valid samples mapped for program ${program}`);
+        }
+      }
+    }
+    
+    console.log(`\nMapping complete: ${this.programToSamples.size} programs successfully mapped`);
+    console.log(`Programs with samples:`, Array.from(this.programToSamples.keys()).slice(0, 20));
+  }
+setRecordDestination(destNode) {
+  // destNode は MediaStreamAudioDestinationNode
+  // nullなら録音OFF
+  if (this.recordDest) {
+    try { this.master.disconnect(this.recordDest); } catch(e){}
+    this.recordDest = null;
+  }
+  if (destNode) {
+    this.recordDest = destNode;
+    this.master.connect(destNode);
+  }
+}
+
+
+  findSample(channel, program, note) {
+  // ===== bank決定（GM/GS/XG互換）=====
+  let bank = 0;
+
+  // ドラムチャンネル判定
+  const isDrumCh = (channel === 9);
+
+if (isDrumCh) {
+  const msb = this.channelBankMSB[channel] ?? 0;
+  const lsb = this.channelBankLSB[channel] ?? 0;
+
+  if (compatMode === "GM") {
+    bank = 128;
+  } else if (compatMode === "GS") {
+    // GSでも多くのSF2は128だが、LSB対応もできるようにする
+    bank = (msb * 128) + lsb;
+bank = 128;
+    if (!this.programToSamples.has(`${bank}:${program}`)) bank = 128;
+  } else if (compatMode === "XG") {
+    // XGドラムはMSB/LSBで切り替わることがある
+    bank = (msb * 128) + lsb;
+bank = 128;
+    // fallback: よくある128に戻す
+    if (!this.programToSamples.has(`${bank}:${program}`)) bank = 128;
+  }
+
+  } else {
+    // メロディ
+    const msb = this.channelBankMSB[channel] ?? 0; // CC0
+    const lsb = this.channelBankLSB[channel] ?? 0; // CC32
+
+    if (compatMode === "GM") {
+      // GMは基本 bank=0 で固定（BankSelect無視）
+      bank = 0;
+    } else if (compatMode === "GS") {
+      // GSは LSB(Variation) を bank番号として使うことが多い
+      // 例: LSB=0=通常, LSB=1=Variation1...
+      bank = lsb;
+    } else if (compatMode === "XG") {
+      // XGは MSBで大分類、LSBでVariation、という構造が多い
+      // SoundFont側が "MSB:LSB" を持ってる場合に対応するため 128*MSB + LSB にする
+      bank = (msb * 128) + lsb;
+    }
+  }
+
+  // bank:program のプリセットを探す
+  const key = `${bank}:${program}`;
+  const samplesForProgram = this.programToSamples.get(key);
+
+  // サンプルが無い場合
+  if (this.sampleBuffers.size === 0) {
+    console.warn("No samples available");
+    return null;
+  }
+
+  // ★マッピングがあれば使う
+  if (samplesForProgram && samplesForProgram[note] !== undefined) {
+    const sampleIdx = samplesForProgram[note].sampleIdx;
+    const sampleInfo = this.sampleBuffers.get(sampleIdx);
+    const entry = samplesForProgram[note];
+
+    if (this.debugCount === undefined) this.debugCount = 0;
+    if (this.debugCount < 10) {
+      console.log(
+        `Mode=${compatMode} bank=${bank} prog=${program} note=${note} -> sample ${sampleIdx}: ${sampleInfo?.name}`
+      );
+      this.debugCount++;
+    }
+
+    return {
+      sampleInfo,
+      entry: {
+        rootKey: entry.rootKey,
+        coarseTune: entry.coarseTune,
+        fineTune: entry.fineTune,
+        attenuation: entry.attenuation ?? 0
+      }
+    };
+  }
+
+  // ★フォールバック：GM bank=0 も試す（GS/XGで該当bankが無い場合に鳴るようにする）
+  if (compatMode !== "GM" && !isDrumCh) {
+    const fallbackKey = `0:${program}`;
+    const fallback = this.programToSamples.get(fallbackKey);
+    if (fallback && fallback[note] !== undefined) {
+      const sampleIdx = fallback[note].sampleIdx;
+      const sampleInfo = this.sampleBuffers.get(sampleIdx);
+      const entry = fallback[note];
+
+      return {
+        sampleInfo,
+        entry: {
+          rootKey: entry.rootKey,
+          coarseTune: entry.coarseTune,
+          fineTune: entry.fineTune,
+          attenuation: entry.attenuation ?? 0
+        }
+      };
+    }
+  }
+
+  // 最終フォールバック：近いrootKeyのサンプル
+  let bestIndex = 0;
+  let bestDiff = 999;
+
+  this.sampleBuffers.forEach((info, idx) => {
+    const diff = Math.abs(info.originalPitch - note);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestIndex = idx;
+    }
+  });
+
+  const fallbackSample = this.sampleBuffers.get(bestIndex);
+  return {
+    sampleInfo: fallbackSample,
+    entry: {
+      rootKey: fallbackSample.originalPitch,
+      coarseTune: 0,
+      fineTune: 0
+    }
+  };
+}
+
+noteNumberToName(n) {
+  const names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const octave = Math.floor(n / 12) - 1;
+  const name = names[n % 12];
+  return `${name}${octave}`;
+}
+
+
+
+  noteOn(channel, note, velocity, when) {
+   // noteOn 側
+
+if(chvelocity[channel] < velocity){
+chvelocity[channel] = velocity;
+for(let a = 0; a < velocity; a++){
+const v = document.querySelector(`.vel${a}.ch${channel}`);
+v.classList.add("active");
+}
+}
+const k = document.querySelector(`.kLabel.ch${channel}`);
+k.textContent="KNB:"+this.noteNumberToName(note);
+const program = this.channelPrograms[channel];
+const result = this.findSample(channel, program, note);
+if (!result) return;
+    const { sampleInfo, entry } = result;
+    
+    this.channelPolyCount[channel]++;
+
+    const key = `${channel}-${note}`;
+    if (this.activeNotes.has(key)) {
+      this.noteOff(channel, note, when);
+    }
+    
+    // 時刻が負の値にならないように保証
+    const now = this.audioCtx.currentTime;
+    const scheduleTime = Math.max(when, now+0.005);
+    
+    const source = this.audioCtx.createBufferSource();
+  
+    source.buffer = sampleInfo.buffer;
+const baseRate = source.playbackRate.value;
+const cents = sampleInfo.pitchCorrection || 0;
+ const bendRange = 0; // semitone
+const pitchCorrection =
+  (entry.pitchCorrection ?? 0) / 100; // cents → semitone
+const bend = this.channelPitchBend[channel]*bendRange;
+  //(this.channelPitchBend[channel] - 8192) / 8192 * bendRange;
+
+const pitch =
+  note
+  - entry.rootKey
+  + entry.coarseTune
+  + entry.fineTune / 100
+  + (sampleInfo.pitchCorrection ?? 0) / 100
+  + bend;
+
+source.playbackRate.value = Math.pow(2, pitch / 12);
+
+
+
+
+
+
+
+    
+    // ループ設定（有効なループポイントがある場合のみ）
+    if (sampleInfo.loopStart > 0 && sampleInfo.loopEnd > sampleInfo.loopStart) {
+      source.loop = true;
+      const duration = sampleInfo.buffer.duration;
+      const sampleRate = sampleInfo.buffer.sampleRate;
+      source.loopStart = sampleInfo.loopStart / sampleRate;
+      source.loopEnd = sampleInfo.loopEnd / sampleRate;
+    }
+   
+    // ベロシティベースの音量調整
+    const gain = this.audioCtx.createGain();
+    const vel = Math.pow(velocity / 127, 0.4);
+
+const isMelody = (channel == melodyCh);
+
+const melodyGain = isMelody ? 1.8 : 1.0;
+
+
+const poly = Math.max(1, this.channelPolyCount[channel]);
+const polyComp = channel === 9 ? 1.0 : 1 / Math.sqrt(poly);
+const progGain = this.channelProgramGain[channel] ?? 1.0;
+   let vol = this.channelVolume[channel] / 127;
+  
+const expr = this.channelExpression[channel] / 127;
+let gmGain =
+  vel * 
+  (this.channelVolume[channel] / 127) *
+  (this.channelExpression[channel] / 127);
+ 
+   if(channel == 9){
+    gmGain += 1.0;
+   }
+const attGain = attenuationToGain(entry.attenuation);
+
+const base = gmGain;
+
+gain.gain.cancelScheduledValues(now);
+gain.gain.setValueAtTime(0.0, now);
+
+// 速いアタック（1ms）
+//gain.gain.exponentialRampToValueAtTime(base, now + 0);
+
+// そのまま維持
+
+
+gain.gain.linearRampToValueAtTime(
+  gmGain,
+  scheduleTime + 0
+);
+
+
+
+
+const panNode = this.audioCtx.createStereoPanner();
+const pan = (this.channelPan[channel] - 64) / 64;
+panNode.pan.value = pan;
+
+// センター補正
+const panComp = pan === 0 ? 1.414 : 1.0;
+gain.gain.value *= panComp;
+
+panNode.pan.value = (this.channelPan[channel] - 64) / 64;
+
+
+
+
+    // フィルター追加（高周波ノイズを減らす）
+    const filter = this.audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 16500;
+filter.Q.value = 0.3;
+
+   
+
+// ★毎回ノードを作らない（固定Sendへ）
+gain.connect(this.revSendByCh[channel]);
+gain.connect(this.choSendByCh[channel]);
+
+
+
+    source.connect(filter);
+    filter.connect(gain);
+    //gain.connect(this.channelGains[channel]);
+    gain.connect(panNode);
+panNode.connect(this.channelGains[channel]);
+    source.start(scheduleTime);
+    this.activeNotes.set(key, {
+  source,
+  gain,
+  startTime: scheduleTime,
+  channel: channel,
+  note: note,
+baseRate: baseRate,
+entry:entry, // ← これを追加 
+sampleInfo:sampleInfo
+});
+   // this.activeNotes.set(key, { source, gain, startTime: scheduleTime });
+  }
+
+  noteOff(channel, note, when) {
+
+    const key = `${channel}-${note}`;
+    const info = this.activeNotes.get(key);
+    if (!info) return;
+    
+    const { source, gain } = info;
+    this.channelPolyCount[channel] =
+  Math.max(0, this.channelPolyCount[channel] - 1);
+
+    // 時刻が負の値にならないように保証
+    const now = this.audioCtx.currentTime;
+    const scheduleTime = Math.max(when, now);
+    if(channel == 9){
+    gain.gain.setValueAtTime(gain.gain.value, scheduleTime);
+    gain.gain.linearRampToValueAtTime(0, scheduleTime + 0.2);
+    source.stop(scheduleTime + 0.22);
+    
+    this.activeNotes.delete(key);
+    return;
+    }
+    gain.gain.setValueAtTime(gain.gain.value, scheduleTime);
+    gain.gain.linearRampToValueAtTime(0, scheduleTime + 0.05);
+    source.stop(scheduleTime + 0.05);
+    
+    this.activeNotes.delete(key);
+  }
+  noteOn(channel, note, velocity, when){
+
+const program = this.channelPrograms[channel];
+const result = this.findSample(channel, program, note);
+if(!result) return;
+
+const { sampleInfo, entry } = result;
+
+const key = `${channel}-${note}`;
+
+const pitch =
+  note
+  - entry.rootKey
+  + entry.coarseTune
+  + entry.fineTune/100
+  + (sampleInfo.pitchCorrection ?? 0)/100;
+
+const rate = Math.pow(2, pitch/12);
+
+this.worklet.port.postMessage({
+
+  type:"noteOn",
+
+  key:key,
+
+  buffer: sampleInfo.buffer.getChannelData(0),
+
+  rate: rate,
+
+  gain: velocity/127,
+
+  loopStart: sampleInfo.loopStart,
+
+  loopEnd: sampleInfo.loopEnd
+
+});
+
+this.activeNotes.set(key,{
+  channel,
+  note
+});
+
+}
+noteOff(channel, note){
+
+const key = `${channel}-${note}`;
+
+if(!this.activeNotes.has(key)) return;
+
+this.worklet.port.postMessage({
+
+  type:"noteOff",
+
+  key:key
+
+});
+
+this.activeNotes.delete(key);
+
+}
+allNotesOff(ch) {
+  const now = this.audioCtx.currentTime;
+
+  // activeNotes は "channel-note" のキー
+  for (const key of this.activeNotes.keys()) {
+    const [c, n] = key.split("-").map(Number);
+    if (c === ch) {
+      this.noteOff(c, n, now);
+    }
+  }
+}
+
+getProgramGain(program) {
+  // SC-88的カテゴリ
+  if (program >= 80 && program <= 87) return dbToGain(4);   // Lead
+  if (program >= 56 && program <= 63) return dbToGain(4);   // Brass
+  if (program >= 40 && program <= 55) return dbToGain(2);   // Strings
+  if (program <= 7)                   return dbToGain(6);   // Piano
+  if (program >= 88 && program <= 95) return dbToGain(-4);  // Pad
+  if (program >= 32 && program <= 39) return dbToGain(-6);  // Bass
+  return 1.0;
+}
+
+  programChange(channel, program) {
+  if (channel === 9) return;
+  this.channelPrograms[channel] = program & 0x7F;
+
+  // ★ここを修正
+  this.channelProgramGain[channel] =
+    this.getProgramGain(program);
+updateChannelInstrument(channel);
+}
+resetGM() {
+  for (let ch = 0; ch < 16; ch++) {
+    this.channelPrograms[ch] = 0;
+    this.channelVolume[ch] = 100;
+    this.channelExpression[ch] = 127;
+    this.channelPan[ch] = 64;
+    this.channelPitchBend[ch] = 0;
+
+    // ★BankSelectも戻す
+    this.channelBankMSB[ch] = 0;
+    this.channelBankLSB[ch] = 0;
+
+    // ★Reverb/Chorusも戻す（任意）
+    this.channelReverbSend[ch] = 40;
+    this.channelChorusSend[ch] = 0;
+  }
+}
+
+
+
+}
+
+function clearKeyboard() {
+  for (let i = 0; i < 128; i++) {
+    keyOff(i);
+  }
+}
+function drawChannelWave(ch){
+
+  //console.log(chvelocity[ch]);
+  let a = chvelocity[ch];
+  const v = document.querySelector(`.vel${a}.ch${ch}`);
+  if(v) v.classList.remove("active");
+
+  if(chvelocity[ch]>0){
+    chvelocity[ch]--;
+  }
+
+  const ui = channelUI[ch];
+  if(!ui) return;
+
+  const analyser = synth.channelAnalysers[ch];
+  const buf = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(buf);
+
+  // ⭐ トリガー（波形固定）
+  let trigger = 0;
+  for(let i=1;i<buf.length;i++){
+    if(buf[i-1] < 128 && buf[i] >= 128){
+      trigger = i;
+      break;
+    }
+  }
+
+  const ctx = ui.canvas.getContext("2d");
+  ctx.clearRect(0,0,ui.canvas.width,ui.canvas.height);
+
+  ctx.beginPath();
+  for(let i=0;i<ui.canvas.width;i++){
+    const index = (i + trigger) % buf.length;
+    const value = buf[index] / 255;
+    const y = (1 - value) * ui.canvas.height;
+
+    if(i===0) ctx.moveTo(i,y);
+    else ctx.lineTo(i,y);
+  }
+
+  ctx.strokeStyle = "rgb(255,255,255)";
+  ctx.stroke();
+
+}
+
+
+// ============ MIDI Parser (元のコードから) ============
+function parseMidi(arrayBuffer) {
+  const data = new DataView(arrayBuffer);
+  let offset = 0;
+
+  function readUint32BE() {
+    const v = data.getUint32(offset, false);
+    offset += 4;
+    return v;
+  }
+  function readUint16BE() {
+    const v = data.getUint16(offset, false);
+    offset += 2;
+    return v;
+  }
+  function readBytes(n) {
+    const bytes = [];
+    for (let i = 0; i < n; i++) bytes.push(data.getUint8(offset++));
+    return bytes;
+  }
+  function readStr(n) {
+    return String.fromCharCode(...readBytes(n));
+  }
+  function readVarLen() {
+    let value = 0;
+    while (true) {
+      const b = data.getUint8(offset++);
+      value = (value << 7) | (b & 0x7F);
+      if ((b & 0x80) === 0) break;
+    }
+    return value;
+  }
+
+  const headerId = readStr(4);
+  if (headerId !== "MThd") throw new Error("Invalid MIDI header");
+  const headerLength = readUint32BE();
+  const formatType = readUint16BE();
+  const trackCount = readUint16BE();
+  const division = readUint16BE();
+  if (headerLength > 6) offset += (headerLength - 6);
+
+  const tracks = [];
+  for (let t = 0; t < trackCount; t++) {
+    const trackId = readStr(4);
+    if (trackId !== "MTrk") throw new Error("Invalid Track header");
+    const trackLength = readUint32BE();
+    const trackEnd = offset + trackLength;
+
+    const events = [];
+    let runningStatus = null;
+    let absTicks = 0;
+
+    while (offset < trackEnd) {
+      const delta = readVarLen();
+      absTicks += delta;
+
+      let statusByte = data.getUint8(offset++);
+      if (statusByte < 0x80) {
+        offset--;
+        statusByte = runningStatus;
+      } else {
+        runningStatus = statusByte;
+      }
+
+      if (statusByte === 0xFF) {
+        const metaType = data.getUint8(offset++);
+        const length = readVarLen();
+        const metaData = readBytes(length);
+        events.push({ absTicks, type: "meta", metaType, data: metaData });
+      } else if (statusByte === 0xF0 || statusByte === 0xF7) {
+        const length = readVarLen();
+        const sysExData = readBytes(length);
+        events.push({ absTicks, type: "sysex", data: sysExData });
+      } else {
+        const evtType = statusByte >> 4;
+        const channel = statusByte & 0x0F;
+        const needsTwo = !(evtType === 0xC || evtType === 0xD);
+        const p1 = data.getUint8(offset++);
+        const p2 = needsTwo ? data.getUint8(offset++) : null;
+        events.push({ absTicks, type: "midi", evtType, channel, p1, p2 });
+      }
+    }
+    tracks.push(events);
+  }
+
+  return { header: { formatType, trackCount, division }, tracks };
+}
+
+function buildTempoMap(tracks, division) {
+  const tempoEvents = [];
+  for (const trk of tracks) {
+    for (const ev of trk) {
+      if (ev.type === "meta" && ev.metaType === 0x51 && ev.data.length === 3) {
+        const mpb = (ev.data[0] << 16) | (ev.data[1] << 8) | ev.data[2];
+        tempoEvents.push({ absTicks: ev.absTicks, microsecPerQuarter: mpb });
+      }
+    }
+  }
+  tempoEvents.sort((a, b) => a.absTicks - b.absTicks);
+  const segments = [];
+  let lastTick = 0;
+  let currentMicro = 500000;
+  let currentSec = 0;
+
+  segments.push({ startTick: 0, startSec: 0, micro: currentMicro });
+  for (const t of tempoEvents) {
+    const deltaTicks = t.absTicks - lastTick;
+    const secDelta = (deltaTicks * currentMicro) / (division * 1_000_000);
+    currentSec += secDelta;
+    segments.push({ startTick: t.absTicks, startSec: currentSec, micro: t.microsecPerQuarter });
+    lastTick = t.absTicks;
+    currentMicro = t.microsecPerQuarter;
+  }
+  return segments;
+}
+
+function ticksToSeconds(absTicks, segments, division) {
+  let seg = segments[0];
+  for (let i = 1; i < segments.length; i++) {
+    if (segments[i].startTick <= absTicks) seg = segments[i];
+    else break;
+  }
+  const deltaTicks = absTicks - seg.startTick;
+  const secDelta = (deltaTicks * seg.micro) / (division * 1_000_000);
+  return seg.startSec + secDelta;
+}
+
+function collectAllEvents(tracks) {
+  const all = [];
+  for (const trk of tracks) for (const ev of trk) all.push(ev);
+  all.sort((a, b) => a.absTicks - b.absTicks);
+  return all;
+}
+
+// ============ Visualizer ============
+function initVisualizer() {
+  const container = document.getElementById('visualizer');
+  container.innerHTML = '';
+  
+  for (let i = 0; i < 16; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'background:#000; padding:0px;';
+    
+    const label = document.createElement('div');
+    label.textContent = `Ch ${i}`;
+    label.style.cssText = 'font-size:11px; color:#aaa; margin-bottom:0px;';
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 60;
+    canvas.id = `canvas${i}`;
+    canvas.style.cssText = 'width:100%; height:60px; display:block;';
+    
+    wrapper.appendChild(label);
+    wrapper.appendChild(canvas);
+    container.appendChild(wrapper);
+  }
+}
+
+let animationId = null;
+function animate(synth) {
+  if (!synth) return;
+
+  
+  for (let i = 0; i < 16; i++) {
+    const canvas = document.getElementById(`canvas${i}`);
+    if (!canvas) continue;
+    
+    const ctx = canvas.getContext('2d');
+    const analyser = synth.channelAnalysers[i];
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    analyser.getByteTimeDomainData(dataArray);
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.lineWidth = 1.0;
+    ctx.strokeStyle = `hsl(${i * 22.5}, 100%, 60%)`;
+    ctx.beginPath();
+    
+    const sliceWidth = canvas.width / bufferLength;
+    let x = 0;
+    
+    for (let j = 0; j < bufferLength; j++) {
+      const v = dataArray[j] / 128.0;
+      const y = v * canvas.height / 2;
+      
+      if (j === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+      
+      x += sliceWidth;
+    }
+    
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+  }
+  
+  animationId = requestAnimationFrame(() => animate(synth));
+}
+
+// ============ UI ============
+const audioCtx = new AudioContext({
+  
+});
+//const audioCtx = new (window.AudioContext({
+ // sampleRate: 96000
+//}) || window.webkitAudioContext)();
+async function initAudio() {
+await audioCtx.audioWorklet.addModule("synth-worklet.js");
+
+this.worklet = new AudioWorkletNode(
+  audioCtx,
+  "sf2-player",
+  {outputChannelCount:[2]}
+);
+
+this.worklet.connect(this.masterGain);
+
+}
+
+initAudio();
+loadDefaultSoundFont();
+const sf2Input = document.getElementById('sf2File');
+const midiInput = document.getElementById('midiFile');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const logEl = document.getElementById('log');
+const sf2Status = document.getElementById('sf2Status');
+
+let soundFont = null;
+let parsed = null;
+let synth = null;
+let stopCallback = null;
+
+function log(msg) {
+  logEl.textContent += msg + "\n";
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+sf2Input.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  sf2Status.textContent = 'Loading...';
+  log(`Loading SoundFont: ${file.name}`);
+  
+  try {
+    const buf = await file.arrayBuffer();
+    const parser = new SoundFontParser(buf);
+    soundFont = parser.parse();
+    
+    sf2Status.textContent = `✓ Loaded (${soundFont.samples.length} samples)`;
+    sf2Status.style.color = '#4a4';
+    log(`SoundFont loaded: ${soundFont.presets.length} presets, ${soundFont.samples.length} samples`);
+    
+    
+  } catch (err) {
+    sf2Status.textContent = '✗ Error';
+    sf2Status.style.color = '#a44';
+    log(`Error loading SoundFont: ${err.message}`);
+  }
+});
+
+midiInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  try {
+    const buf = await file.arrayBuffer();
+    parsed = parseMidi(buf);
+    log(`Loaded MIDI: ${file.name}`);
+    log(`Format: ${parsed.header.formatType}, Tracks: ${parsed.header.trackCount}, Division: ${parsed.header.division}`);
+    
+    
+  } catch (err) {
+    log(`Error loading MIDI: ${err.message}`);
+  }
+});
+initBigScopes();
+function smoothPitchBend(ch, start, end, duration = 200) {
+  const steps = 30; // 滑らかさ
+  const stepTime = duration / steps;
+  let current = 0;
+
+  const timer = setInterval(() => {
+    current++;
+    const t = current / steps;
+    const value = Math.round(start + (end - start) * t);
+
+    synth.pitchBend(ch, value);
+
+    if (current >= steps) {
+      clearInterval(timer);
+    }
+  }, stepTime);
+}
+
+playBtn.addEventListener('click', () => {
+  //if (!parsed || !soundFont);
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+  
+
+  
+  const outputMode = document.querySelector('input[name="outputMode"]:checked')?.value || 'soundfont';
+  const useSoundfont = outputMode === 'soundfont' || outputMode === 'both';
+  const useMidiOutput = outputMode === 'midi' || outputMode === 'both';
+  //initVisualizer();
+const inputMode =
+  document.querySelector('input[name="inputMode"]:checked')?.value || 'file';
+
+
+synth = new SoundFontSynth(audioCtx, soundFont);
+
+  
+  
+if (inputMode === 'realtime') {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  //initVisualizer();
+  
+  //animate(synth);
+  log('Realtime MIDI mode started');
+  return;
+}
+
+
+  const { division } = parsed.header;
+  const tempoMap = buildTempoMap(parsed.tracks, division);
+  const all = collectAllEvents(parsed.tracks);
+  
+  const startTicks = performance.now();
+  let idx = 0;
+  let isPlaying = true;
+  
+  stopCallback = () => {
+    isPlaying = false;
+  };
+  if (selectedMidiOutput) {
+    resetExternalSoundModule();
+
+    // ★SC-88が落ち着くのを待つ
+    
+  }
+  function step() {
+    if (!isPlaying) return;
+   
+  const useMidiOutputChecked = useMidiOutput ? useMidiOutput.checked : false;
+    const lookAhead = 0.15; // ルックアヘッドを150msに延長
+    const now = performance.now();
+    const audioNow = audioCtx.currentTime;
+    
+    while (idx < all.length && isPlaying) {
+      const ev = all[idx];
+      const evTimeMs = ticksToSeconds(ev.absTicks, tempoMap, division) * 1000;
+      const deltaMs = evTimeMs - (now - startTicks);
+      for(let ch=0;ch<16;ch++){
+        
+   // drawChannelWave(ch);
+  }
+  //drawBigScopes();
+      if (deltaMs <= lookAhead * 1000) {
+        // スケジュール時刻を計算（最小でも現在時刻+10msを保証）
+        const scheduleTime = Math.max(audioNow + deltaMs / 1000, audioNow + 0.01);
+        if (
+  ev.type === "sysex" &&
+  ev.data[0] === 0x7E &&
+  ev.data[2] === 0x09 &&
+  ev.data[3] === 0x01
+) {
+  synth.resetGM();
+}
+
+        if (ev.type === "midi") {
+          const ch = ev.channel;
+          switch (ev.evtType) {
+           case 0x9: {
+      const note = ev.p1;
+      const vel = ev.p2 || 0;
+      if (vel > 0) {
+        // SoundFont再生
+        if (useSoundfont) {
+          synth.noteOn(ch, note, vel, scheduleTime);
+        }
+        keyOn(ch, note);
+        // MIDI出力
+        if (useMidiOutput && selectedMidiOutput) {
+          setTimeout(() => sendMidiNoteOn(ch, note, vel), deltaMs);
+        }
+      } else {
+        if (useSoundfont) {
+          synth.noteOff(ch, note, scheduleTime);
+
+        }
+keyOff(ch, note);
+        if (useMidiOutput && selectedMidiOutput) {
+          setTimeout(() => sendMidiNoteOff(ch, note), deltaMs);
+        }
+      }
+      break;
+    }
+    case 0x8: {
+ const note = ev.p1;
+      if (useSoundfont) {
+        synth.noteOff(ch, ev.p1, scheduleTime);
+
+      }
+keyOff(ch, note);
+      if (useMidiOutput && selectedMidiOutput) {
+        setTimeout(() => sendMidiNoteOff(ch, ev.p1), deltaMs);
+      }
+      break;
+    }
+    case 0xB: { // ← evtType は 0xB（11）です
+  const cc = ev.p1;
+  const val = ev.p2 ?? 0;
+
+  if (cc === 0) synth.channelBankMSB[ch] = val;
+  else if (cc === 32) synth.channelBankLSB[ch] = val;
+
+  else synth.controlChange(ch, cc, val);
+
+  break;
+}
+
+case 0xE: {
+//console.log("pitchBend");
+  const value = (ev.p2 << 7) | ev.p1;
+  if (useSoundfont) {
+   synth.pitchBend(ch, value);
+  }
+ break;
+}
+//case 0xE: {
+ // const target = (ev.p2 << 7) | ev.p1; // 本来のピッチベンド値
+ // const current = synth.channelPitchBend[ch] ?? 8192; // チャンネルごとに保持
+
+ // smoothPitchBend(ch, current, target, 200);
+
+ // synth.channelPitchBend[ch] = target;
+ // break;
+//}
+
+    case 0xC: {
+      if (useSoundfont) {
+
+        synth.programChange(ch, ev.p1);
+      }
+      if (useMidiOutput && selectedMidiOutput) {
+        setTimeout(() => sendMidiProgramChange(ch, ev.p1), deltaMs);
+      }
+      break;
+    }
+          }
+        }
+        idx++;
+      } else {
+        break;
+      }
+    }
+    
+    if (idx < all.length && isPlaying) {
+      setTimeout(step, 10);
+    } else if (isPlaying) {
+      log("Finished.");
+      
+    }
+  }
+  
+  
+  log("Playing with SoundFont...");
+  //animate(synth);
+  setInterval(()=>{
+  if(!melodyChManual){
+    //updateMelodyScoreByVolume();
+    //detectMelodyChannel();
+  }
+}, 100);
+
+
+
+  step();
+});
+
+stopBtn.addEventListener('click', () => {
+  if (stopCallback) stopCallback();
+clearAllKeys();
+  const outputMode = document.querySelector('input[name="outputMode"]:checked')?.value || 'soundfont';
+  if ((outputMode === 'midi' || outputMode === 'both') && selectedMidiOutput) {
+    sendAllNotesOff();
+  }
+  if (synth) {
+    const now = audioCtx.currentTime;
+    for (const key of synth.activeNotes.keys()) {
+      const [ch, note] = key.split('-').map(Number);
+      synth.noteOff(ch, note, now);
+    }
+  }
+  
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+  
+  
+  log("Stopped.");
+});
+const recBtn = document.getElementById("recBtn");
+const recStopBtn = document.getElementById("recStopBtn");
+
+recBtn.addEventListener("click", async () => {
+  if (!audioCtx || !synth) {
+    alert("先にSoundFontとMIDIを読み込んでください");
+    return;
+  }
+
+  // 録音用Stream作成
+  recordDest = audioCtx.createMediaStreamDestination();
+  synth.setRecordDestination(recordDest);
+
+  recordingStream = recordDest.stream;
+
+  recordedChunks = [];
+  recorder = new MediaRecorder(recordingStream);
+
+  recorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+  };
+
+  recorder.onstop = async () => {
+    // MediaRecorderは基本webm/oggになるのでPCMにしてWAV化する
+    const blob = new Blob(recordedChunks, { type: recorder.mimeType });
+
+    const arrayBuf = await blob.arrayBuffer();
+    const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
+
+    const wavBlob = audioBufferToWavBlob(audioBuf);
+
+    const url = URL.createObjectURL(wavBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "midi_recording.wav";
+    a.click();
+    URL.revokeObjectURL(url);
+
+    // 録音分岐解除
+    synth.setRecordDestination(null);
+  };
+
+  recorder.start();
+  recBtn.disabled = true;
+  recStopBtn.disabled = false;
+});
+
+
+recStopBtn.addEventListener("click", () => {
+  if (recorder && recorder.state !== "inactive") {
+    recorder.stop();
+  }
+  recBtn.disabled = false;
+  recStopBtn.disabled = true;
+});
+function audioBufferToWavBlob(audioBuffer) {
+  const numChannels = audioBuffer.numberOfChannels;
+  const sampleRate = audioBuffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+
+  // interleave
+  const length = audioBuffer.length;
+  const interleaved = new Float32Array(length * numChannels);
+
+  for (let ch = 0; ch < numChannels; ch++) {
+    const channelData = audioBuffer.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      interleaved[i * numChannels + ch] = channelData[i];
+  }
+  }
+
+
+  // float -> int16
+  const pcm16 = new Int16Array(interleaved.length);
+  for (let i = 0; i < interleaved.length; i++) {
+    let s = Math.max(-1, Math.min(1, interleaved[i]));
+    pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
+
+  // WAV header
+  const byteRate = sampleRate * numChannels * (bitDepth / 8);
+  const blockAlign = numChannels * (bitDepth / 8);
+  const buffer = new ArrayBuffer(44 + pcm16.length * 2);
+  const view = new DataView(buffer);
+
+  function writeString(offset, str) {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  }
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + pcm16.length * 2, true);
+  writeString(8, "WAVE");
+
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+
+  writeString(36, "data");
+  view.setUint32(40, pcm16.length * 2, true);
+
+  // PCM data
+  let offset = 44;
+  for (let i = 0; i < pcm16.length; i++, offset += 2) {
+    view.setInt16(offset, pcm16[i], true);
+  }
+
+  return new Blob([view], { type: "audio/wav" });
+}
+async function loadDefaultSoundFont() {
+  try {
+    const res = await fetch("GM.sf2");
+    if (!res.ok) throw new Error("Failed to fetch default.sf2");
+
+   
+    
+const buf = await res.arrayBuffer();
+    const parser = new SoundFontParser(buf);
+    soundFont = parser.parse();
+   
+    
+   
+    
+    sf2Status.textContent = `✓ Loaded (${soundFont.samples.length} samples)`;
+    sf2Status.style.color = '#4a4';
+
+    
+    
+
+    document.getElementById("sf2Status").textContent =
+      "✓ Default SoundFont loaded";
+    document.getElementById("sf2Status").style.color = "#4a4";
+
+    console.log("Default SoundFont loaded");
+
+  } catch (e) {
+    
+    document.getElementById("sf2Status").textContent =
+      "✗ Default SoundFont load failed";
+    document.getElementById("sf2Status").style.color = "#a44";
+  }
+}
+
+window.addEventListener('DOMContentLoaded', initMidiAccess);
+</script>
+</body>
+</html>
