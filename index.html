@@ -2296,8 +2296,11 @@ const pitch =
   + entry.fineTune/100
   + (sampleInfo.pitchCorrection ?? 0)/100
   + bend;
+const sampleRateCorrection =
+  sampleInfo.buffer.sampleRate / this.audioCtx.sampleRate;
 
-const rate = Math.pow(2, pitch/12);
+const rate = Math.pow(2, pitch/12) * sampleRateCorrection;
+//const rate = Math.pow(2, pitch/12);
 
 this.worklet.port.postMessage({
 
