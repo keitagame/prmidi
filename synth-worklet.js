@@ -17,13 +17,17 @@ class SF2Processor extends AudioWorkletProcessor {
           rate: msg.rate,
           gain: msg.gain,
           loopStart: msg.loopStart,
-          loopEnd: msg.loopEnd
+          loopEnd: msg.loopEnd,
+          release: false
         });
 
       }
 
       if(msg.type === "noteOff"){
-        this.voices.delete(msg.key);
+        const v = this.voices.get(msg.key);
+        if(v){
+          v.release = true; // 削除せずリリース開始
+        }
       }
 
     };
@@ -38,9 +42,9 @@ class SF2Processor extends AudioWorkletProcessor {
 
       let sample = 0;
 
-      for(const voice of this.voices.values()){
+      for(const [key, voice] of this.voices){
 
-        const idx = voice.pos|0;
+        const idx = voice.pos | 0;
 
         if(idx < voice.buffer.length){
 
@@ -48,10 +52,21 @@ class SF2Processor extends AudioWorkletProcessor {
 
           voice.pos += voice.rate;
 
-          if(voice.loopEnd>voice.loopStart && voice.pos>voice.loopEnd){
+          if(voice.loopEnd > voice.loopStart && voice.pos > voice.loopEnd){
             voice.pos = voice.loopStart;
           }
 
+          // release処理
+          if(voice.release){
+            voice.gain *= 0.995;
+
+            if(voice.gain < 0.0001){
+              this.voices.delete(key);
+            }
+          }
+
+        } else {
+          this.voices.delete(key);
         }
 
       }
