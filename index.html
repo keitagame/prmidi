@@ -2344,7 +2344,7 @@ noteOff(channel, note) {
   if (channel === 9) {
     setTimeout(sendNoteOff, 200); // 200ms
   } else {
-    sendNoteOff();
+    setTimeout(sendNoteOff,100);
   }
 }
 
