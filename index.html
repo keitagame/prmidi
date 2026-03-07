@@ -1486,13 +1486,7 @@ for (let ch = 0; ch < 16; ch++) {
     
     this.prepareSamples();
     this.buildProgramMapping();
-   this.worklet = new AudioWorkletNode(
-  this.audioCtx,
-  "sf2-player",
-  {outputChannelCount:[2]}
-);
 
-this.worklet.connect(this.master);
   
 
   }
