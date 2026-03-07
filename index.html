@@ -1487,7 +1487,16 @@ for (let ch = 0; ch < 16; ch++) {
     this.prepareSamples();
     this.buildProgramMapping();
 
-  
+  const worklet = new AudioWorkletNode(
+    audioCtx,
+    "sf2-player",
+    { outputChannelCount: [2] }
+  );
+
+  const masterGain = audioCtx.createGain();
+
+  worklet.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
 
   }
 pitchBend(ch, value14) {
@@ -2647,16 +2656,7 @@ async function initAudio() {
 
   await audioCtx.audioWorklet.addModule("synth-worklet.js");
 
-  const worklet = new AudioWorkletNode(
-    audioCtx,
-    "sf2-player",
-    { outputChannelCount: [2] }
-  );
-
-  const masterGain = audioCtx.createGain();
-
-  worklet.connect(masterGain);
-  masterGain.connect(audioCtx.destination);
+  
 
 }
 initAudio();
