@@ -2342,7 +2342,7 @@ noteOff(channel, note) {
 
   // channel 9 の場合は 0.2 秒遅延
   if (channel === 9) {
-    setTimeout(sendNoteOff, 200); // 200ms
+    setTimeout(sendNoteOff, 0); // 200ms
   } else {
     setTimeout(sendNoteOff,0);
   }
