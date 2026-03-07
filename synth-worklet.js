@@ -66,4 +66,4 @@ class SF2Processor extends AudioWorkletProcessor {
 
 }
 
-registerProcessor("sf2-player", SF2Processor);
+registerProcessor("sf2-processor", SF2Processor);
