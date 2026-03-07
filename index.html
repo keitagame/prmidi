@@ -2877,7 +2877,7 @@ keyOff(ch, note);
   if (cc === 0) synth.channelBankMSB[ch] = val;
   else if (cc === 32) synth.channelBankLSB[ch] = val;
 
-  else synth.controlChange(ch, cc, val);
+  else //synth.controlChange(ch, cc, val);
 
   break;
 }
@@ -2886,7 +2886,7 @@ case 0xE: {
 //console.log("pitchBend");
   const value = (ev.p2 << 7) | ev.p1;
   if (useSoundfont) {
-   synth.pitchBend(ch, value);
+   //synth.pitchBend(ch, value);
   }
  break;
 }
