@@ -2634,15 +2634,16 @@ function animate(synth) {
 }
 
 // ============ UI ============
-const audioCtx = new AudioContext({
+//const audioCtx = new AudioContext({
   
-});
+//});
+let audioCtx;
 //const audioCtx = new (window.AudioContext({
  // sampleRate: 96000
 //}) || window.webkitAudioContext)();
 async function initAudio() {
 
-  const audioCtx = new AudioContext();
+  audioCtx = new AudioContext();
 
   await audioCtx.audioWorklet.addModule("synth-worklet.js");
 
