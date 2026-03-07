@@ -2647,18 +2647,23 @@ const audioCtx = new AudioContext({
  // sampleRate: 96000
 //}) || window.webkitAudioContext)();
 async function initAudio() {
-await audioCtx.audioWorklet.addModule("synth-worklet.js");
 
-this.worklet = new AudioWorkletNode(
-  audioCtx,
-  "sf2-player",
-  {outputChannelCount:[2]}
-);
+  const audioCtx = new AudioContext();
 
-this.worklet.connect(this.masterGain);
+  await audioCtx.audioWorklet.addModule("synth-worklet.js");
+
+  const worklet = new AudioWorkletNode(
+    audioCtx,
+    "sf2-player",
+    { outputChannelCount: [2] }
+  );
+
+  const masterGain = audioCtx.createGain();
+
+  worklet.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
 
 }
-
 initAudio();
 loadDefaultSoundFont();
 const sf2Input = document.getElementById('sf2File');
