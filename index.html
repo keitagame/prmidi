@@ -2282,12 +2282,20 @@ const { sampleInfo, entry } = result;
 
 const key = `${channel}-${note}`;
 
+
+
+const cents = sampleInfo.pitchCorrection || 0;
+ const bendRange = 0; // semitone
+const pitchCorrection =
+  (entry.pitchCorrection ?? 0) / 100; // cents → semitone
+const bend = this.channelPitchBend[channel]*bendRange;
 const pitch =
   note
   - entry.rootKey
   + entry.coarseTune
   + entry.fineTune/100
-  + (sampleInfo.pitchCorrection ?? 0)/100;
+  + (sampleInfo.pitchCorrection ?? 0)/100
+  + bend;
 
 const rate = Math.pow(2, pitch/12);
 
