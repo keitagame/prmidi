@@ -2326,23 +2326,30 @@ this.activeNotes.set(key,{
 });
 
 }
-noteOff(channel, note){
 
-const key = `${channel}-${note}`;
+noteOff(channel, note) {
+  const key = `${channel}-${note}`;
 
-if(!this.activeNotes.has(key)) return;
+  if (!this.activeNotes.has(key)) return;
 
-this.worklet.port.postMessage({
+  const sendNoteOff = () => {
+    this.worklet.port.postMessage({
+      type: "noteOff",
+      key: key
+    });
+    this.activeNotes.delete(key);
+  };
 
-  type:"noteOff",
-
-  key:key
-
-});
-
-this.activeNotes.delete(key);
-
+  // channel 9 の場合は 0.2 秒遅延
+  if (channel === 9) {
+    setTimeout(sendNoteOff, 200); // 200ms
+  } else {
+    sendNoteOff();
+  }
 }
+
+
+
 allNotesOff(ch) {
   const now = this.audioCtx.currentTime;
 
