@@ -35,50 +35,55 @@ class SF2Processor extends AudioWorkletProcessor {
 
   process(inputs, outputs){
 
-    const outL = outputs[0][0];
-    const outR = outputs[0][1];
+  const outL = outputs[0][0];
+  const outR = outputs[0][1];
 
-    for(let i=0;i<outL.length;i++){
+  const remove = [];
 
-      let sample = 0;
+  for(let i=0;i<outL.length;i++){
 
-      for(const [key, voice] of this.voices){
+    let sample = 0;
 
-        const idx = voice.pos | 0;
+    for(const [key, voice] of this.voices){
 
-        if(idx < voice.buffer.length){
+      const idx = voice.pos | 0;
 
-          sample += voice.buffer[idx] * voice.gain;
+      if(idx < voice.buffer.length){
 
-          voice.pos += voice.rate;
+        sample += voice.buffer[idx] * voice.gain;
 
-          if(voice.loopEnd > voice.loopStart && voice.pos > voice.loopEnd){
-            voice.pos = voice.loopStart;
-          }
+        voice.pos += voice.rate;
 
-          // release処理
-          if(voice.release){
-            voice.gain -= 0.05;
-
-            if(voice.gain < 0.0001){
-              this.voices.delete(key);
-            }
-          }
-
-        } else {
-          this.voices.delete(key);
+        if(voice.loopEnd > voice.loopStart && voice.pos > voice.loopEnd){
+          voice.pos = voice.loopStart;
         }
 
-      }
+        if(voice.release){
+          voice.gain *= 0.995;
 
-      outL[i] = sample;
-      outR[i] = sample;
+          if(voice.gain < 0.00001){
+            remove.push(key);
+          }
+        }
+
+      } else {
+        remove.push(key);
+      }
 
     }
 
-    return true;
+    sample = Math.max(-1, Math.min(1, sample));
+
+    outL[i] = sample;
+    outR[i] = sample;
   }
 
+  for(const k of remove){
+    this.voices.delete(k);
+  }
+
+  return true;
+}
 }
 
 registerProcessor("sf2-player", SF2Processor);
