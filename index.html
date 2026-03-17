@@ -1379,7 +1379,8 @@ function setupHiDPICanvas(canvas, cssW, cssH){
 
   return ctx;
 }
-
+let voiceCounter = 0;
+const activeNotes = {};
 // ============ SoundFont Synth ============
 class SoundFontSynth {
   constructor(audioCtx, soundFont) {
@@ -2281,8 +2282,12 @@ if(!result) return;
 const { sampleInfo, entry } = result;
 
 //const key = `${channel}-${note}`;
-const key = `${channel}-${note}-${voiceId++}`;
+//const key = `${channel}-${note}-${voiceId++}`;
+const id = voiceCounter++;
 
+ activeNotes[`${channel}-${note}`] = id;
+
+ const key = `${channel}-${note}-${id}`;
 
 
 const cents = sampleInfo.pitchCorrection || 0;
@@ -2329,8 +2334,12 @@ this.activeNotes.set(key,{
 }
 
 noteOff(channel, note) {
-  const key = `${channel}-${note}`;
+  //const key = `${channel}-${note}`;
+const id = activeNotes[`${channel}-${note}`];
 
+ if(id===undefined) return;
+
+ const key = `${channel}-${note}-${id}`;
   if (!this.activeNotes.has(key)) return;
 
   const sendNoteOff = () => {
