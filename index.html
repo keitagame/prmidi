@@ -2285,9 +2285,15 @@ const { sampleInfo, entry } = result;
 //const key = `${channel}-${note}-${voiceId++}`;
 const id = voiceCounter++;
 
- activeNotes[`${channel}-${note}`] = id;
+const keyBase = `${channel}-${note}`;
 
- const key = `${channel}-${note}-${id}`;
+if(!activeNotes[keyBase]){
+  activeNotes[keyBase] = [];
+}
+
+activeNotes[keyBase].push(id);
+
+const key = `${channel}-${note}-${id}`;
 
 
 const cents = sampleInfo.pitchCorrection || 0;
@@ -2335,11 +2341,15 @@ this.activeNotes.set(key,{
 
 noteOff(channel, note) {
   //const key = `${channel}-${note}`;
-const id = activeNotes[`${channel}-${note}`];
+const keyBase = `${channel}-${note}`;
 
- if(id===undefined) return;
+const list = activeNotes[keyBase];
 
- const key = `${channel}-${note}-${id}`;
+if(!list || list.length === 0) return;
+
+const id = list.shift(); // 一番古いvoice
+
+const key = `${channel}-${note}-${id}`;
   if (!this.activeNotes.has(key)) return;
 
   const sendNoteOff = () => {
