@@ -2324,7 +2324,7 @@ this.worklet.port.postMessage({
 
   rate: rate,
 
-  gain: velocity/127,
+  gain: (velocity / 127) * 0.2,
 
   loopStart: sampleInfo.loopStart,
 
