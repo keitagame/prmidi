@@ -58,7 +58,7 @@ class SF2Processor extends AudioWorkletProcessor {
 
           // release処理
           if(voice.release){
-            voice.gain -= 0.0005;
+            voice.gain -= 0.05;
 
             if(voice.gain < 0.0001){
               this.voices.delete(key);
