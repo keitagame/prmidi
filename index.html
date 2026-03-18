@@ -2323,7 +2323,7 @@ this.worklet.port.postMessage({
 
   rate: rate,
 
-  gain: (velocity / 127) * 0.2,
+  gain: (velocity / 127) * 0.5,
 
   loopStart: sampleInfo.loopStart,
 
@@ -2746,7 +2746,7 @@ class SF2Processor extends AudioWorkletProcessor {
         }
 
         if(voice.release){
-          voice.gain *= 0.995;
+          voice.gain = 0.0;
 
           if(voice.gain < 0.00001){
             remove.push(key);
